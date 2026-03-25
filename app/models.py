@@ -13,10 +13,10 @@ class LOGIN_INFO(BaseModel):
 class LLM_INFO(BaseModel):
     id: int
     name: str
-    type: int  # 0 = API, 1 = Browser
+    type: int  #0 = API, 1 = Browser
     api_key: str
     login_details: List[LOGIN_INFO]
 
 class LLM_TEST_REQUEST(BaseModel):
-    prompts: List[PROMPT]   # ✅ fixed
+    prompts: List[PROMPT] 
     llm_info: LLM_INFO

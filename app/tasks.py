@@ -1,12 +1,10 @@
-from celery_app import celery_app  # <- remove 'app.' to avoid import issues
+from .celery_app import celery_app  
 import time
 import random
 
 @celery_app.task
 def run_llm_task(prompt, llm_info):
-    """
-    Simulates calling an LLM (API or browser-based)
-    """
+
     # simulate variable response time
     time.sleep(random.randint(2, 5))
 
