@@ -2,12 +2,14 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from uuid import uuid4
 import json
+import asyncio
 import time
 
 from app.celery_app import celery_app
 from app.models import LLM_TEST_REQUEST
 from app.tasks import run_llm_task
 
+#temporary just for testing, we should move this from in memory to redis when possible
 jobs = {}
 
 app = FastAPI()
@@ -20,8 +22,8 @@ def start_job(request: LLM_TEST_REQUEST):
 
     for prompt in request.prompts:
         task = run_llm_task.delay(
-            prompt.dict(),
-            request.llm_info.dict()
+            prompt.model_dump(),
+            request.llm_info.model_dump()
         )
         task_ids.append(task.id)
 
@@ -30,8 +32,8 @@ def start_job(request: LLM_TEST_REQUEST):
 
 
 @app.get("/stream/{job_id}")
-def stream_results(job_id: str):
-    def event_stream():
+async def stream_results(job_id: str):
+    async def event_stream():
         task_ids = jobs.get(job_id, [])
         completed = set()
 
@@ -51,7 +53,7 @@ def stream_results(job_id: str):
                     completed.add(task_id)
                     yield f"data: {json.dumps({'task_id': task_id, 'error': str(result.result)})}\n\n"
 
-            time.sleep(1)
+            await asyncio.sleep(1)
 
         yield "data: [DONE]\n\n"
 

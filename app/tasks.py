@@ -9,8 +9,15 @@ def run_llm_task(prompt, llm_info):
     time.sleep(random.randint(2, 5))
 
     if llm_info["type"] == 0:
+        #Add all the necessary logic to call the correct LLM
+        
+        
         result = f"API response to: {prompt['prompt']}"
     else:
+         #Add all the necessary logic to call the correct LLM
+
+
+
         result = f"Browser response to: {prompt['prompt']}"
 
     evaluation = evaluate_response(
