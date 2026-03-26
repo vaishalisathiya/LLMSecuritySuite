@@ -4,16 +4,15 @@ from uuid import uuid4
 import json
 import time
 
-from celery.result import AsyncResult
-from .models import LLM_TEST_REQUEST
-from .tasks import run_llm_task
+from app.celery_app import celery_app
+from app.models import LLM_TEST_REQUEST
+from app.tasks import run_llm_task
 
-# in-memory job store (for demo)
 jobs = {}
 
 app = FastAPI()
 
-# start job endpoint
+
 @app.post("/start-job")
 def start_job(request: LLM_TEST_REQUEST):
     job_id = str(uuid4())
@@ -29,7 +28,7 @@ def start_job(request: LLM_TEST_REQUEST):
     jobs[job_id] = task_ids
     return {"job_id": job_id}
 
-# stream results endpoint
+
 @app.get("/stream/{job_id}")
 def stream_results(job_id: str):
     def event_stream():
@@ -40,10 +39,18 @@ def stream_results(job_id: str):
             for task_id in task_ids:
                 if task_id in completed:
                     continue
-                result = AsyncResult(task_id)
-                if result.ready():
+
+                result = celery_app.AsyncResult(task_id)
+
+                if result.state == "SUCCESS":
                     completed.add(task_id)
-                    yield f"data: {json.dumps(result.result)}\n\n"
+                    if result.result is not None:
+                        yield f"data: {json.dumps(result.result)}\n\n"
+
+                elif result.state == "FAILURE":
+                    completed.add(task_id)
+                    yield f"data: {json.dumps({'task_id': task_id, 'error': str(result.result)})}\n\n"
+
             time.sleep(1)
 
         yield "data: [DONE]\n\n"
