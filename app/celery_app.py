@@ -13,5 +13,4 @@ celery_app.conf.update(
     result_serializer="json",
 )
 
-# Register tasks
 import app.tasks

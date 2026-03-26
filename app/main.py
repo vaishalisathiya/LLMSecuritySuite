@@ -4,16 +4,15 @@ from uuid import uuid4
 import json
 import asyncio
 import time
+import redis
 
 from app.celery_app import celery_app
 from app.models import LLM_TEST_REQUEST
 from app.tasks import run_llm_task
 
-#temporary just for testing, we should move this from in memory to redis when possible
-jobs = {}
+r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
 app = FastAPI()
-
 
 @app.post("/start-job")
 def start_job(request: LLM_TEST_REQUEST):
@@ -27,14 +26,19 @@ def start_job(request: LLM_TEST_REQUEST):
         )
         task_ids.append(task.id)
 
-    jobs[job_id] = task_ids
+    r.set(f"job:{job_id}", json.dumps(task_ids))
     return {"job_id": job_id}
 
 
 @app.get("/stream/{job_id}")
 async def stream_results(job_id: str):
     async def event_stream():
-        task_ids = jobs.get(job_id, [])
+        task_ids_json = r.get(f"job:{job_id}")
+        if not task_ids_json:
+            yield f"data: {json.dumps({'error': 'Job not found'})}\n\n"
+            return
+        
+        task_ids = json.loads(task_ids_json)
         completed = set()
 
         while len(completed) < len(task_ids):
