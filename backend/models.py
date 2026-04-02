@@ -1,23 +1,49 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, Timestamp
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
+
+
+class Tenant(Base):
+    __tablename__ = "tenants"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
 
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False)
     name = Column(Text, nullable=False)
     email = Column(Text, unique=True, nullable=False)
+    role = Column(Text, nullable=False, default="viewer")
 
     prompts = relationship("Prompt", back_populates="creator")
+
+
+class LLMModel(Base):
+    __tablename__ = "models"
+
+    id = Column(Integer, primary_key=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False)
+    name = Column(Text, nullable=False)
+    provider = Column(Text, nullable=False)
+    model_type = Column(Text, nullable=False)
+    interface_type = Column(Text, nullable=False)
+    access_method = Column(Text, nullable=False)
+    credential_reference = Column(Text, nullable=True)
+
+    test_runs = relationship("TestRun", back_populates="model")
 
 
 class Prompt(Base):
     __tablename__ = "prompts"
 
     id = Column(Integer, primary_key=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False)
     input_text = Column(Text, nullable=False)
     category = Column(Text, nullable=False)
     risk_level = Column(Text, nullable=False)
@@ -31,13 +57,18 @@ class TestRun(Base):
     __tablename__ = "test_runs"
 
     id = Column(Integer, primary_key=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False)
     prompt_id = Column(Integer, ForeignKey("prompts.id"), nullable=False)
-    model_name = Column(Text, nullable=False)
-    run_status = Column(Text, nullable=False)
-    created_at = Column(Timestamp, server_default=func.now())
+    model_id = Column(Integer, ForeignKey("models.id"), nullable=False)
+    run_status = Column(Text, nullable=False, default="pending")
+    celery_task_id = Column(Text, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    completed_at = Column(DateTime, nullable=True)
 
     prompt = relationship("Prompt", back_populates="test_runs")
+    model = relationship("LLMModel", back_populates="test_runs")
     results = relationship("Result", back_populates="test_run")
+    logs = relationship("Log", back_populates="test_run")
 
 
 class Result(Base):
@@ -47,7 +78,21 @@ class Result(Base):
     test_run_id = Column(Integer, ForeignKey("test_runs.id"), nullable=False)
     output_text = Column(Text)
     vulnerability_detected = Column(Boolean, nullable=False)
+    detection_method = Column(Text, nullable=True)
     notes = Column(Text)
     severity = Column(Text)
 
     test_run = relationship("TestRun", back_populates="results")
+
+
+class Log(Base):
+    __tablename__ = "logs"
+
+    id = Column(Integer, primary_key=True)
+    test_run_id = Column(Integer, ForeignKey("test_runs.id"), nullable=True)
+    level = Column(Text, nullable=False)
+    message = Column(Text, nullable=False)
+    stack_trace = Column(Text, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+    test_run = relationship("TestRun", back_populates="logs")

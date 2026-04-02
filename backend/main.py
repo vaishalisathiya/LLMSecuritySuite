@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import scans, users
+from routers import scans, users, models, llm
 
 app = FastAPI(title="LLM Security Suite API", version="0.1.0")
 
@@ -13,7 +13,9 @@ app.add_middleware(
 )
 
 app.include_router(users.router)
+app.include_router(models.router)
 app.include_router(scans.router)
+app.include_router(llm.router)
 
 
 @app.get("/health")

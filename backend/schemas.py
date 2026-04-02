@@ -14,6 +14,28 @@ class UserOut(BaseModel):
         from_attributes = True
 
 
+# --- Model ---
+
+class LLMModelCreate(BaseModel):
+    name: str
+    provider: str
+    model_type: str
+    access_method: str
+    credential_reference: Optional[str] = None
+
+
+class LLMModelOut(BaseModel):
+    id: int
+    name: str
+    provider: str
+    model_type: str
+    access_method: str
+    credential_reference: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
 # --- Prompt ---
 
 class PromptCreate(BaseModel):
@@ -38,13 +60,13 @@ class PromptOut(BaseModel):
 
 class TestRunCreate(BaseModel):
     prompt_id: int
-    model_name: str
+    model_id: int
 
 
 class TestRunOut(BaseModel):
     id: int
     prompt_id: int
-    model_name: str
+    model_id: int
     run_status: str
     created_at: Optional[datetime]
 
@@ -57,6 +79,7 @@ class TestRunOut(BaseModel):
 class ResultCreate(BaseModel):
     output_text: Optional[str] = None
     vulnerability_detected: bool
+    detection_method: Optional[str] = None
     notes: Optional[str] = None
     severity: Optional[str] = None
 
@@ -71,3 +94,46 @@ class ResultOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# --- Stats ---
+
+class CategoryCount(BaseModel):
+    category: str
+    count: int
+
+class RiskCount(BaseModel):
+    risk_level: str
+    count: int
+
+class SeverityCount(BaseModel):
+    severity: str
+    count: int
+
+class StatsOverview(BaseModel):
+    total_scans: int
+    completed: int
+    pending: int
+    total_results: int
+    vulnerable: int
+    safe: int
+    detection_rate: float
+    by_category: list[CategoryCount]
+    by_risk: list[RiskCount]
+    by_severity: list[SeverityCount]
+    vuln_by_category: list[CategoryCount]
+
+
+# --- LLM Interact ---
+
+class LLMInteractRequest(BaseModel):
+    prompt: str
+    provider: str
+    model: str
+    api_key: str
+
+
+class LLMInteractResponse(BaseModel):
+    response: str
+    provider: str
+    model: str
