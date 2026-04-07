@@ -4,7 +4,7 @@ from typing import List
 class PROMPT(BaseModel):
     id: int
     prompt: str
-    acceptance_criteria: str
+    acceptance_criteria: List[str]
 
 class LOGIN_INFO(BaseModel):
     location: str
@@ -16,7 +16,6 @@ class LLM_INFO(BaseModel):
     type: int  #0 = API, 1 = Browser
     connection_point: str
     login_details: List[LOGIN_INFO]
-    input_box: str
 
 class LLM_TEST_REQUEST(BaseModel):
     prompts: List[PROMPT] 

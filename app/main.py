@@ -51,10 +51,18 @@ async def stream_results(job_id: str):
                 if result.state == "SUCCESS":
                     completed.add(task_id)
                     if result.result is not None:
-                        yield f"data: {json.dumps(result.result)}\n\n"
+                        
+                        #yield f"data: {json.dumps(result.result)}\n\n"
+
+                        #just for testing
+                        yield f"data: {json.dumps({
+                            'vulnerability_detected': result.result['vulnerability_detected'],
+                            'response': result.result['response']  
+                        })}\n\n"
 
                 elif result.state == "FAILURE":
                     completed.add(task_id)
+                    
                     yield f"data: {json.dumps({'task_id': task_id, 'error': str(result.result)})}\n\n"
 
             await asyncio.sleep(1)
