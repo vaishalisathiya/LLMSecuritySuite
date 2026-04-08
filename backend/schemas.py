@@ -28,7 +28,7 @@ class LLMModelCreate(BaseModel):
     access_method: str
     access_url: Optional[str] = None #if browser based, where to look to enter data
     browser_textbox: Optional[str] = None
-    credential_reference: Optional[str] = None,
+    credential_reference: Optional[str] = None
     login_info: Optional[List[LoginInfo]] = []
 
 
@@ -40,7 +40,7 @@ class LLMModelOut(BaseModel):
     access_method: str
     access_url: Optional[str] = None #if browser based, where to look to enter data
     browser_textbox: Optional[str] = None
-    credential_reference: Optional[str] = None,
+    credential_reference: Optional[str] = None
     login_info: Optional[List[LoginInfo]] = []
 
     class Config:
@@ -146,11 +146,14 @@ class StatsOverview(BaseModel):
 
 class LLMInteractRequest(BaseModel):
     prompt: str
+    name: str
     provider: str
-    model: str | None = None
-    api_key: str
-    endpoint: str | None = None
-
+    model_type: str
+    access_method: str
+    access_url: Optional[str] = None #if browser based, where to look to enter data
+    browser_textbox: Optional[str] = None
+    credential_reference: Optional[str] = None
+    login_info: Optional[List[LoginInfo]] = []
 
 class LLMInteractResponse(BaseModel):
     response: str
