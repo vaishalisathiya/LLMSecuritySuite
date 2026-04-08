@@ -1,0 +1,24 @@
+
+from pydantic import BaseModel
+from typing import List
+
+class PROMPT(BaseModel):
+    id: int
+    prompt: str
+    acceptance_criteria: str
+
+class LOGIN_INFO(BaseModel):
+    location: str
+    input: str
+
+class LLM_INFO(BaseModel):
+    id: int
+    name: str
+    type: int  #0 = API, 1 = Browser
+    connection_point: str
+    login_details: List[LOGIN_INFO]
+    input_box: str
+
+class LLM_TEST_REQUEST(BaseModel):
+    prompts: List[PROMPT] 
+    llm_info: LLM_INFO

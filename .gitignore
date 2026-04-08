@@ -1,1 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+"frontend/package-lock 2.json"
+
+# Misc
 .DS_Store
