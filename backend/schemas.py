@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
-
+from typing import List
 
 # --- User ---
 
@@ -14,14 +14,22 @@ class UserOut(BaseModel):
         from_attributes = True
 
 
-# --- Model ---
+# --- Model + Access ---
+
+class LoginInfo(BaseModel):
+    location: str
+    credential_reference: str
+
 
 class LLMModelCreate(BaseModel):
     name: str
     provider: str
     model_type: str
     access_method: str
-    credential_reference: Optional[str] = None
+    access_url: Optional[str] = None #if browser based, where to look to enter data
+    browser_textbox: Optional[str] = None
+    credential_reference: Optional[str] = None,
+    login_info: Optional[List[LoginInfo]] = []
 
 
 class LLMModelOut(BaseModel):
@@ -30,11 +38,13 @@ class LLMModelOut(BaseModel):
     provider: str
     model_type: str
     access_method: str
-    credential_reference: Optional[str]
+    access_url: Optional[str] = None #if browser based, where to look to enter data
+    browser_textbox: Optional[str] = None
+    credential_reference: Optional[str] = None,
+    login_info: Optional[List[LoginInfo]] = []
 
     class Config:
         from_attributes = True
-
 
 # --- Prompt ---
 
@@ -43,6 +53,7 @@ class PromptCreate(BaseModel):
     category: str
     risk_level: str
     created_by: int
+    acceptance_criteria: str
 
 
 class PromptOut(BaseModel):
@@ -51,6 +62,7 @@ class PromptOut(BaseModel):
     category: str
     risk_level: str
     created_by: Optional[int]
+    acceptance_criteria: str
 
     class Config:
         from_attributes = True
@@ -58,14 +70,14 @@ class PromptOut(BaseModel):
 
 # --- Test Run ---
 
-class TestRunCreate(BaseModel):
-    prompt_id: int
+class TestSuiteCreate(BaseModel):
+    prompt_id_list: List[int]
     model_id: int
 
 
-class TestRunOut(BaseModel):
+class TestSuiteOut(BaseModel):
     id: int
-    prompt_id: int
+    prompt_id_list: List[int]
     model_id: int
     run_status: str
     created_at: Optional[datetime]
@@ -77,20 +89,26 @@ class TestRunOut(BaseModel):
 # --- Result ---
 
 class ResultCreate(BaseModel):
-    output_text: Optional[str] = None
+    prompt_id: int
+    test_suite_id: int
+    output_text: str
     vulnerability_detected: bool
     detection_method: Optional[str] = None
-    notes: Optional[str] = None
+    notes: str
     severity: Optional[str] = None
-
+    confidence: float
+    acceptance_criteria: str
 
 class ResultOut(BaseModel):
     id: int
-    test_run_id: int
-    output_text: Optional[str]
+    prompt_id: int
+    test_suite_id: int
+    output_text: str
     vulnerability_detected: bool
-    notes: Optional[str]
+    notes: str
     severity: Optional[str]
+    confidence: float
+    acceptance_criteria: str
 
     class Config:
         from_attributes = True
@@ -129,8 +147,9 @@ class StatsOverview(BaseModel):
 class LLMInteractRequest(BaseModel):
     prompt: str
     provider: str
-    model: str
+    model: str | None = None
     api_key: str
+    endpoint: str | None = None
 
 
 class LLMInteractResponse(BaseModel):

@@ -1,5 +1,3 @@
-# selenium_runner.py
-
 from selenium import webdriver 
 from selenium.webdriver.common.by import By 
 from selenium.webdriver.common.keys import Keys 
@@ -28,7 +26,6 @@ def handle_login(driver, login_details):
             time.sleep(1)
         except Exception:
             pass
-
 def find_input_box(driver, identifier): 
     candidates = driver.find_elements(By.CSS_SELECTOR, identifier) 
     valid = [] 
@@ -100,3 +97,6 @@ def run_prompt(prompt: PROMPT, llm_info: LLM_INFO):
     input_box.send_keys(Keys.RETURN) 
     response = wait_until_text_stops_changing(driver, "main") 
     return response
+
+def run_browser_llm(prompt: str, llm_info: dict):
+    return run_prompt(prompt, llm_info)

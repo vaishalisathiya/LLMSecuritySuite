@@ -6,9 +6,9 @@ import asyncio
 import time
 import redis
 
-from app.celery_app import celery_app
-from app.models import LLM_TEST_REQUEST
-from app.tasks import run_llm_task
+from LLMSecuritySuite.backend.llm_interactions.celery.celery_app import celery_app
+from LLMSecuritySuite.backend.llm_interactions.models import LLM_TEST_REQUEST
+from LLMSecuritySuite.backend.llm_interactions.celery.tasks import run_llm_task
 
 r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 

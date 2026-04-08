@@ -1,21 +1,29 @@
-from app.celery_app import celery_app
-from app.evaluator import evaluate_response
+from LLMSecuritySuite.backend.llm_interactions.celery.celery_app import celery_app
+from LLMSecuritySuite.backend.llm_interactions.evaluator import evaluate_response
+from LLMSecuritySuite.backend.llm_interactions.services.llm_api_services import run_api_llm
+
 import time
 import random
 import requests
 import os
+import asyncio
 
+API_LLM_URL = "http://localhost:8002/llm/api/run"
 BROWSER_LLM_URL = os.getenv("BROWSER_LLM_URL", "http://localhost:8001")
 @celery_app.task(name="app.tasks.run_llm_task")
 def run_llm_task(prompt, llm_info):
 
     if llm_info["type"] == 0:
-        #Add all the necessary logic to call the correct LLM
-        
-        
-        result = f"API response to: {prompt['prompt']}"
-    else:
-        #Add all the necessary logic to call the correct LLM
+        result = asyncio.run(
+                run_api_llm(
+                    prompt=prompt["prompt"],
+                    provider=llm_info.get("provider"),
+                    model=llm_info.get("model"),
+                    api_key=llm_info.get("api_key"),
+                    endpoint=llm_info.get("endpoint") 
+                )
+            )
+    else:        
         try:
             res = requests.post(
                 f"{BROWSER_LLM_URL}/run",
