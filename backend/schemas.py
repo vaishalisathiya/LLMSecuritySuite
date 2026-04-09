@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List
 
 # --- User ---
@@ -31,7 +31,6 @@ class LLMModelCreate(BaseModel):
     credential_reference: Optional[str] = None
     login_info: Optional[List[LoginInfo]] = []
 
-
 class LLMModelOut(BaseModel):
     id: int
     name: str
@@ -55,7 +54,6 @@ class PromptCreate(BaseModel):
     created_by: int
     acceptance_criteria: str
 
-
 class PromptOut(BaseModel):
     id: int
     input_text: str
@@ -73,7 +71,6 @@ class PromptOut(BaseModel):
 class TestSuiteCreate(BaseModel):
     prompt_id_list: List[int]
     model_id: int
-
 
 class TestSuiteOut(BaseModel):
     id: int
@@ -144,18 +141,34 @@ class StatsOverview(BaseModel):
 
 # --- LLM Interact ---
 
-class LLMInteractRequest(BaseModel):
-    prompt: str
+class LLMPrompt(BaseModel):
+    input_text: str
+    category: str
+    risk_level: str
+    created_by: int
+    acceptance_criteria: str
+
+class LLMModel(BaseModel):
     name: str
     provider: str
     model_type: str
     access_method: str
-    access_url: Optional[str] = None #if browser based, where to look to enter data
+    acceptance_criteria: str
+    access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
     login_info: Optional[List[LoginInfo]] = []
 
-class LLMInteractResponse(BaseModel):
+class LLMPromptRequest(BaseModel):
+    prompt: LLMPrompt
+    model: LLMModel
+    
+
+class LLMInteractRequest(BaseModel):
+    prompt_list: List[LLMPrompt]
+    model: LLMModel
+
+class LLMPromptResponse(BaseModel):
     response: str
     provider: str
     model: str
