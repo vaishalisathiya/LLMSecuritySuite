@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, DateTime, Float, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
@@ -35,6 +35,9 @@ class LLMModel(Base):
     interface_type = Column(Text, nullable=False)
     access_method = Column(Text, nullable=False)
     credential_reference = Column(Text, nullable=True)
+    access_url = Column(Text, nullable=True)
+    browser_textbox = Column(Text, nullable=True)
+    login_info = Column(JSON, nullable=True)
 
     test_runs = relationship("TestRun", back_populates="model")
 
@@ -48,6 +51,7 @@ class Prompt(Base):
     category = Column(Text, nullable=False)
     risk_level = Column(Text, nullable=False)
     created_by = Column(Integer, ForeignKey("users.id"))
+    acceptance_criteria = Column(Text, nullable=True)
 
     creator = relationship("User", back_populates="prompts")
     test_runs = relationship("TestRun", back_populates="prompt")
@@ -76,11 +80,14 @@ class Result(Base):
 
     id = Column(Integer, primary_key=True)
     test_run_id = Column(Integer, ForeignKey("test_runs.id"), nullable=False)
+    prompt_id = Column(Integer, ForeignKey("prompts.id"), nullable=True)
     output_text = Column(Text)
     vulnerability_detected = Column(Boolean, nullable=False)
     detection_method = Column(Text, nullable=True)
     notes = Column(Text)
     severity = Column(Text)
+    confidence = Column(Float, nullable=True)
+    acceptance_criteria = Column(Text, nullable=True)
 
     test_run = relationship("TestRun", back_populates="results")
 

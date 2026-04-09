@@ -22,7 +22,10 @@ CREATE TABLE models (
     model_type TEXT NOT NULL,
     interface_type TEXT NOT NULL,  -- 'api' or 'browser'
     access_method TEXT NOT NULL,
-    credential_reference TEXT      -- Secrets Manager ARN/key name
+    credential_reference TEXT,     -- Secrets Manager ARN/key name
+    access_url TEXT,               -- URL for browser-based models
+    browser_textbox TEXT,          -- CSS selector/ID for input field
+    login_info JSONB               -- list of login steps for browser-based models
 );
 
 CREATE TABLE prompts (
@@ -31,7 +34,8 @@ CREATE TABLE prompts (
     input_text TEXT NOT NULL,
     category TEXT NOT NULL,
     risk_level TEXT NOT NULL,
-    created_by INT REFERENCES users(id)
+    created_by INT REFERENCES users(id),
+    acceptance_criteria TEXT
 );
 
 CREATE TABLE test_runs (
@@ -48,11 +52,14 @@ CREATE TABLE test_runs (
 CREATE TABLE results (
     id SERIAL PRIMARY KEY,
     test_run_id INT NOT NULL REFERENCES test_runs(id),
+    prompt_id INT REFERENCES prompts(id),
     output_text TEXT,
     vulnerability_detected BOOLEAN NOT NULL,
     detection_method TEXT,  -- 'keyword', 'ai_judge', 'manual'
     notes TEXT,
-    severity TEXT           -- 'none', 'low', 'medium', 'high', 'critical'
+    severity TEXT,          -- 'none', 'low', 'medium', 'high', 'critical'
+    confidence FLOAT,
+    acceptance_criteria TEXT
 );
 
 CREATE TABLE logs (
