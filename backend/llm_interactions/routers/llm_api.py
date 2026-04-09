@@ -1,14 +1,9 @@
 from fastapi import APIRouter
 from services.llm_api_services import run_api_llm
-import schemas
+from LLMSecuritySuite.backend.schemas import LLMPromptRequest, LLMPromptResponse
 
 router = APIRouter(prefix="/llm/api", tags=["llm-api"])
 
-@router.post("/interact", response_model=schemas.LLMInteractResponse)
-async def interact(body: schemas.LLMInteractRequest):
-    response = await run_api_llm(body)
-    return schemas.LLMInteractResponse(
-        response=response,
-        provider=body.provider,
-        model=body.model
-    )
+@router.post("/interact", response_model=LLMPromptResponse)
+async def interact(body: LLMPromptRequest):
+    return await run_api_llm(body)
