@@ -163,7 +163,6 @@ class LLMPromptRequest(BaseModel):
     prompt: LLMPrompt
     model: LLMModel
     
-
 class LLMInteractRequest(BaseModel):
     prompt_list: List[LLMPrompt]
     model: LLMModel
