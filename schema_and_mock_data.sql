@@ -41,7 +41,7 @@ CREATE TABLE prompts (
 CREATE TABLE test_runs (
     id SERIAL PRIMARY KEY,
     tenant_id INT NOT NULL REFERENCES tenants(id),
-    prompt_id INT NOT NULL REFERENCES prompts(id),
+    prompt_id_list JSONB NOT NULL,
     model_id INT NOT NULL REFERENCES models(id),
     run_status TEXT NOT NULL DEFAULT 'pending',  -- 'pending', 'running', 'completed', 'failed'
     celery_task_id TEXT,                          -- Celery task UUID for tracking

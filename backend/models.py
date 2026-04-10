@@ -39,7 +39,7 @@ class LLMModel(Base):
     browser_textbox = Column(Text, nullable=True)
     login_info = Column(JSON, nullable=True)
 
-    test_runs = relationship("TestRun", back_populates="model")
+    test_suites = relationship("TestSuite", back_populates="model")
 
 
 class Prompt(Base):
@@ -54,25 +54,23 @@ class Prompt(Base):
     acceptance_criteria = Column(Text, nullable=True)
 
     creator = relationship("User", back_populates="prompts")
-    test_runs = relationship("TestRun", back_populates="prompt")
 
 
-class TestRun(Base):
+class TestSuite(Base):
     __tablename__ = "test_runs"
 
     id = Column(Integer, primary_key=True)
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False)
-    prompt_id = Column(Integer, ForeignKey("prompts.id"), nullable=False)
+    prompt_id_list = Column(JSON, nullable=False)
     model_id = Column(Integer, ForeignKey("models.id"), nullable=False)
     run_status = Column(Text, nullable=False, default="pending")
     celery_task_id = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     completed_at = Column(DateTime, nullable=True)
 
-    prompt = relationship("Prompt", back_populates="test_runs")
-    model = relationship("LLMModel", back_populates="test_runs")
-    results = relationship("Result", back_populates="test_run")
-    logs = relationship("Log", back_populates="test_run")
+    model = relationship("LLMModel", back_populates="test_suites")
+    results = relationship("Result", back_populates="test_suite")
+    logs = relationship("Log", back_populates="test_suite")
 
 
 class Result(Base):
@@ -89,7 +87,7 @@ class Result(Base):
     confidence = Column(Float, nullable=True)
     acceptance_criteria = Column(Text, nullable=True)
 
-    test_run = relationship("TestRun", back_populates="results")
+    test_suite = relationship("TestSuite", back_populates="results")
 
 
 class Log(Base):
@@ -102,4 +100,4 @@ class Log(Base):
     stack_trace = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
 
-    test_run = relationship("TestRun", back_populates="logs")
+    test_suite = relationship("TestSuite", back_populates="logs")
