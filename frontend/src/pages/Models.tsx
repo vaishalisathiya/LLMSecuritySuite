@@ -17,7 +17,7 @@ const PROVIDER_COLORS: Record<string, { bg: string; text: string }> = {
 export default function Models() {
   const [models, setModels] = useState<Model[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', provider: '', model_type: 'LLM', access_method: 'API', credential_reference: '' });
+  const [form, setForm] = useState({ name: '', provider: '', model_type: 'LLM', access_method: 'API', credential_reference: '', access_url: '', browser_textbox: '' });
   const [loading, setLoading] = useState(false);
 
   const load = () => getModels().then(setModels);
@@ -27,8 +27,8 @@ export default function Models() {
     e.preventDefault();
     setLoading(true);
     try {
-      await createModel({ ...form, credential_reference: form.credential_reference || null });
-      setForm({ name: '', provider: '', model_type: 'LLM', access_method: 'API', credential_reference: '' });
+      await createModel({ ...form, credential_reference: form.credential_reference || null, access_url: form.access_url || null, browser_textbox: form.browser_textbox || null });
+      setForm({ name: '', provider: '', model_type: 'LLM', access_method: 'API', credential_reference: '', access_url: '', browser_textbox: '' });
       setShowForm(false);
       load();
     } finally { setLoading(false); }
@@ -113,6 +113,25 @@ export default function Models() {
                   placeholder="e.g. openai-api-key (secret name)" />
                 <p className="text-xs mt-1" style={{ color: '#475569' }}>Reference to the credential in secrets manager</p>
               </div>
+              {form.access_method === 'Browser' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Access URL</label>
+                    <input type="text" value={form.access_url} onChange={e => setForm(f => ({ ...f, access_url: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
+                      style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}
+                      placeholder="e.g. https://chat.openai.com" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Input Field Selector</label>
+                    <input type="text" value={form.browser_textbox} onChange={e => setForm(f => ({ ...f, browser_textbox: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
+                      style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}
+                      placeholder="e.g. #prompt-textarea (CSS selector)" />
+                    <p className="text-xs mt-1" style={{ color: '#475569' }}>CSS selector for the chat input box</p>
+                  </div>
+                </>
+              )}
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={() => setShowForm(false)}
                   className="flex-1 px-4 py-2 rounded-lg text-sm border"

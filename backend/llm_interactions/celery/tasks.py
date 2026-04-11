@@ -1,7 +1,11 @@
-from LLMSecuritySuite.backend.llm_interactions.celery.celery_app import celery_app
-from LLMSecuritySuite.backend.llm_interactions.evaluator import evaluate_response
-from LLMSecuritySuite.backend.llm_interactions.services.llm_api_services import run_api_llm
-from LLMSecuritySuite.backend.schemas import LLMPromptRequest, LLMPromptResponse
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+
+from llm_interactions.celery.celery_app import celery_app
+from llm_interactions.evaluator import evaluate_response
+from llm_interactions.services.llm_api_services import run_api_llm
+from schemas import LLMPromptRequest, LLMPromptResponse
 
 import requests
 import os

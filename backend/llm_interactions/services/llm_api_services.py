@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 import httpx
-from LLMSecuritySuite.backend.schemas import LLMPromptRequest, LLMPromptResponse
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+from schemas import LLMPromptRequest, LLMPromptResponse
 
 router = APIRouter(prefix="/llm", tags=["llm"])
 

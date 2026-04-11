@@ -60,7 +60,7 @@ class PromptOut(BaseModel):
     category: str
     risk_level: str
     created_by: Optional[int]
-    acceptance_criteria: str
+    acceptance_criteria: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -86,26 +86,25 @@ class TestSuiteOut(BaseModel):
 # --- Result ---
 
 class ResultCreate(BaseModel):
-    prompt_id: int
-    test_suite_id: int
-    output_text: str
+    prompt_id: Optional[int] = None
+    output_text: Optional[str] = None
     vulnerability_detected: bool
     detection_method: Optional[str] = None
-    notes: str
+    notes: Optional[str] = None
     severity: Optional[str] = None
-    confidence: float
-    acceptance_criteria: str
+    confidence: Optional[float] = None
+    acceptance_criteria: Optional[str] = None
 
 class ResultOut(BaseModel):
     id: int
-    prompt_id: int
-    test_suite_id: int
-    output_text: str
+    test_run_id: int
+    prompt_id: Optional[int] = None
+    output_text: Optional[str] = None
     vulnerability_detected: bool
-    notes: str
-    severity: Optional[str]
-    confidence: float
-    acceptance_criteria: str
+    notes: Optional[str] = None
+    severity: Optional[str] = None
+    confidence: Optional[float] = None
+    acceptance_criteria: Optional[str] = None
 
     class Config:
         from_attributes = True

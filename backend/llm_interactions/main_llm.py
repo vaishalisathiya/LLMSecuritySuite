@@ -1,17 +1,30 @@
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from uuid import uuid4
 import json
 import asyncio
 import redis
 
-from LLMSecuritySuite.backend.llm_interactions.celery.celery_app import celery_app
-from LLMSecuritySuite.backend.schemas import LLMInteractRequest, LLMPromptRequest
-from LLMSecuritySuite.backend.llm_interactions.celery.tasks import run_llm_task
+from llm_interactions.celery.celery_app import celery_app
+from schemas import LLMInteractRequest, LLMPromptRequest
+from llm_interactions.celery.tasks import run_llm_task
 
 r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
-app = FastAPI()
+app = FastAPI(title="LLM Interaction Service")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:5000", "http://localhost:5001"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/start-job")
 def start_job(request: LLMInteractRequest):

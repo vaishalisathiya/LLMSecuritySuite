@@ -12,6 +12,10 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8001',
         rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/llm-service': {
+        target: 'http://localhost:8002',
+        rewrite: (path) => path.replace(/^\/llm-service/, ''),
       }
     }
   }

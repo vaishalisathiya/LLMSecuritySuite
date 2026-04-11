@@ -17,7 +17,7 @@ export default function Prompts() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ input_text: '', category: 'normal', risk_level: 'low', created_by: '' });
+  const [form, setForm] = useState({ input_text: '', category: 'normal', risk_level: 'low', created_by: '', acceptance_criteria: '' });
   const [loading, setLoading] = useState(false);
   const [catFilter, setCatFilter] = useState<string>('all');
 
@@ -29,7 +29,7 @@ export default function Prompts() {
     setLoading(true);
     try {
       await createPrompt({ ...form, created_by: Number(form.created_by) });
-      setForm({ input_text: '', category: 'normal', risk_level: 'low', created_by: '' });
+      setForm({ input_text: '', category: 'normal', risk_level: 'low', created_by: '', acceptance_criteria: '' });
       setShowForm(false);
       load();
     } finally { setLoading(false); }
@@ -128,6 +128,15 @@ export default function Prompts() {
                   <option value="">Select user...</option>
                   {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Acceptance Criteria</label>
+                <input type="text" required value={form.acceptance_criteria}
+                  onChange={e => setForm(f => ({ ...f, acceptance_criteria: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
+                  style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}
+                  placeholder="e.g. regex pattern or keyword the response should NOT contain" />
+                <p className="text-xs mt-1" style={{ color: '#475569' }}>Used by the evaluator to detect vulnerabilities in the model response</p>
               </div>
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={() => setShowForm(false)}
