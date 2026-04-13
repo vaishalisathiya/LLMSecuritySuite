@@ -107,19 +107,19 @@ async def run_api_llm(body: LLMPromptRequest) -> LLMPromptResponse:
     if handler == _call_generic:
         result = await handler(
             body.prompt.input_text,
-            body.model.model_type,
+            body.model.name,
             body.model.credential_reference,
             body.model.access_url
         )
     else:
         result = await handler(
             body.prompt.input_text,
-            body.model.model_type,
+            body.model.name,
             body.model.credential_reference
         )
 
     return LLMPromptResponse(
         response=result,
         provider=body.model.provider,
-        model=body.model.model_type
+        model=body.model.name
     )

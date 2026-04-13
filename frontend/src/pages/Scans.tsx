@@ -59,7 +59,7 @@ export default function Scans() {
     setLoading(true);
     setStreamEvents([]);
     try {
-      await createScan({ prompt_id_list: form.prompt_ids, model_id: Number(form.model_id) });
+      const scan = await createScan({ prompt_id_list: form.prompt_ids, model_id: Number(form.model_id) });
       load();
 
       const selectedModel = modelsList.find(m => m.id === Number(form.model_id));
@@ -74,6 +74,7 @@ export default function Scans() {
           risk_level: p.risk_level,
           created_by: p.created_by ?? 1,
           acceptance_criteria: p.acceptance_criteria ?? '',
+          prompt_id: p.id,
         })),
         model: {
           name: selectedModel.name,
@@ -86,6 +87,7 @@ export default function Scans() {
           browser_textbox: selectedModel.browser_textbox,
           login_info: [],
         },
+        scan_id: scan.id,
       });
 
       setShowForm(false);
