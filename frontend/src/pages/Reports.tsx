@@ -35,7 +35,8 @@ export default function Reports() {
 
   const enrich = (r: Result) => {
     const scan = scans.find(s => s.id === r.test_run_id);
-    const prompt = prompts.find(p => p.id === scan?.prompt_id);
+    const firstPid = scan?.prompt_id_list?.[0];
+    const prompt = firstPid != null ? prompts.find(p => p.id === firstPid) : undefined;
     const model = modelsList.find(m => m.id === scan?.model_id);
     return { result: r, scan, prompt, model };
   };

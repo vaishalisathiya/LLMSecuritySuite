@@ -70,7 +70,9 @@ export default function Prompts() {
               style={{ backgroundColor: active ? `${cfg.bg}` : '#10121c', borderColor: active ? undefined : '#1e2236' }}>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded flex items-center justify-center" style={{ backgroundColor: cfg.bg }}>
-                  <Icon size={12} style={{ color: cfg.text } as React.CSSProperties} />
+                  <span style={{ color: cfg.text }}>
+                    <Icon size={12} />
+                  </span>
                 </div>
                 <span className="text-xs font-semibold" style={{ color: cfg.text }}>{cfg.label}</span>
               </div>

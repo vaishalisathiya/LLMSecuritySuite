@@ -3,21 +3,6 @@ import { getScans, createScan, getPrompts, getModels, getScanResults, startJob, 
 import type { TestRun, Prompt, Model, Result, StreamEvent } from '../api';
 import { Plus, ChevronDown, ChevronRight, X, ShieldCheck, ShieldAlert, Zap, Activity, CheckCircle2, AlertTriangle, Key } from 'lucide-react';
 
-const CATEGORY_COLOR: Record<string, { bg: string; text: string; label: string }> = {
-  prompt_injection: { bg: '#4c1d9540', text: '#c4b5fd', label: 'Prompt Injection' },
-  jailbreak: { bg: '#7f1d1d40', text: '#fca5a5', label: 'Jailbreak' },
-  data_exfiltration: { bg: '#78350f40', text: '#fcd34d', label: 'Data Exfiltration' },
-  normal: { bg: '#1e3a2f40', text: '#6ee7b7', label: 'Baseline' },
-};
-
-const SEV_LABELS: Record<string, { color: string }> = {
-  critical: { color: '#ef4444' },
-  high: { color: '#f97316' },
-  medium: { color: '#f59e0b' },
-  low: { color: '#10b981' },
-  none: { color: '#475569' },
-};
-
 export default function Scans() {
   const [scans, setScans] = useState<TestRun[]>([]);
   const [prompts, setPrompts] = useState<Prompt[]>([]);

@@ -3,7 +3,7 @@ import type { StatsOverview, TestRun } from '../api';
 import { getStatsOverview, getScans, getPrompts, getModels } from '../api';
 import type { Prompt, Model } from '../api';
 import {
-  ShieldAlert, ShieldCheck, Zap, AlertTriangle,
+  ShieldAlert, ShieldCheck, Zap,
   TrendingUp, Activity, Target, Cpu, CheckCircle2
 } from 'lucide-react';
 
@@ -18,14 +18,6 @@ const RISK_COLOR: Record<string, { dot: string; text: string }> = {
   high: { dot: '#ef4444', text: '#fca5a5' },
   medium: { dot: '#f59e0b', text: '#fcd34d' },
   low: { dot: '#10b981', text: '#6ee7b7' },
-};
-
-const SEV_COLOR: Record<string, string> = {
-  critical: '#ef4444',
-  high: '#f97316',
-  medium: '#f59e0b',
-  low: '#10b981',
-  none: '#475569',
 };
 
 function StatCard({ label, value, sub, icon: Icon, iconColor }: {
@@ -94,12 +86,6 @@ export default function Dashboard() {
     jailbreak: '#ef4444',
     data_exfiltration: '#f59e0b',
     normal: '#10b981',
-  };
-
-  const riskColors: Record<string, string> = {
-    high: '#ef4444',
-    medium: '#f59e0b',
-    low: '#10b981',
   };
 
   return (
@@ -222,7 +208,8 @@ export default function Dashboard() {
             {recentScans.length === 0 ? (
               <tr><td colSpan={7} className="px-5 py-10 text-center text-sm" style={{ color: '#475569' }}>No scans yet — initiate your first security test</td></tr>
             ) : recentScans.map(s => {
-              const p = prompts.find(x => x.id === s.prompt_id);
+              const firstPid = s.prompt_id_list?.[0];
+              const p = firstPid != null ? prompts.find(x => x.id === firstPid) : undefined;
               const m = modelsList.find(x => x.id === s.model_id);
               const catStyle = CATEGORY_COLOR[p?.category || ''] || { bg: '#1e3a2f', text: '#6ee7b7', label: p?.category || '' };
               const riskStyle = RISK_COLOR[p?.risk_level || 'low'] || RISK_COLOR.low;
@@ -230,7 +217,7 @@ export default function Dashboard() {
                 <tr key={s.id} style={{ borderBottom: '1px solid #1e2236' }}>
                   <td className="px-5 py-3 font-mono text-xs" style={{ color: '#64748b' }}>#{s.id}</td>
                   <td className="px-5 py-3 max-w-[200px]">
-                    <p className="truncate text-xs" style={{ color: '#94a3b8' }} title={p?.input_text}>{p?.input_text?.slice(0, 55) || `Prompt #${s.prompt_id}`}</p>
+                    <p className="truncate text-xs" style={{ color: '#94a3b8' }} title={p?.input_text}>{p?.input_text?.slice(0, 55) || (firstPid != null ? `Prompt #${firstPid}` : '—')}</p>
                   </td>
                   <td className="px-5 py-3">
                     {p && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style={{ backgroundColor: `${catStyle.bg}80`, color: catStyle.text }}>{catStyle.label}</span>}
