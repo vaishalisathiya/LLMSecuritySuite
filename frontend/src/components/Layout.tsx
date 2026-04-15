@@ -1,9 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Cpu, FileText, Zap, ShieldAlert, FileBarChart2, Plus } from 'lucide-react';
+import { LayoutDashboard, Cpu, FileText, Shield, ShieldAlert, FileBarChart2, Plus } from 'lucide-react';
+import TopBar from './TopBar';
 
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/scans', label: 'Scans', icon: Zap },
+  { to: '/scans', label: 'Scans', icon: Shield },
   { to: '/reports', label: 'Reports', icon: FileBarChart2 },
   { to: '/prompts', label: 'Prompt Library', icon: FileText },
   { to: '/models', label: 'Model Registry', icon: Cpu },
@@ -29,16 +30,16 @@ export default function Layout() {
           </div>
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
+        <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 py-4">
           {nav.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/'}
               className={({ isActive }) =>
-                `relative flex items-center gap-3 rounded-lg py-2.5 pl-3 pr-3 text-sm font-medium transition-colors ${
+                `relative flex items-center gap-3 rounded-lg py-3.5 pl-3 pr-3 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'text-accent before:pointer-events-none before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:block before:w-0.5 before:rounded-full before:bg-accent'
+                    ? 'text-accent before:pointer-events-none before:absolute before:right-0 before:top-1.5 before:bottom-1.5 before:block before:w-0.5 before:rounded-full before:bg-accent'
                     : 'text-fg-muted hover:bg-white/[0.04] hover:text-fg-strong'
                 }`
               }
@@ -59,7 +60,7 @@ export default function Layout() {
 
         <div className="px-3 pb-5 pt-2">
           <NavLink
-            to="/scans"
+            to="/scans?new=1"
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent py-3 text-sm font-semibold text-surface-void transition-colors hover:bg-accent/90"
           >
             <Plus size={17} strokeWidth={2.5} />
@@ -68,8 +69,11 @@ export default function Layout() {
         </div>
       </aside>
 
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto bg-surface-void">
-        <Outlet />
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface-void">
+        <TopBar />
+        <div className="min-h-0 flex-1 overflow-auto bg-surface-void [background-image:radial-gradient(ellipse_90%_60%_at_50%_-30%,rgba(34,255,233,0.07),transparent_55%)]">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
