@@ -9,11 +9,12 @@
   --color-accent-secondary: #09574f;
 
   --color-surface-void: #000000;
-  --color-surface-base: #111111;
-  --color-surface-raised: #0a0a0a;
-  --color-surface-panel: #141414;
+  --color-surface-base: #0c0c0e;
+  --color-surface-raised: #121215;
+  /* Lifted panels: visibly above void so cards read as real surfaces */
+  --color-surface-panel: #1a1b1f;
 
-  --color-border-subtle: #2a2a2a;
+  --color-border-subtle: #2f3036;
 
   --color-fg: #e1e1e1;
   --color-fg-strong: #ffffff;
