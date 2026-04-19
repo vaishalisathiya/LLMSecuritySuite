@@ -1,19 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from collections import Counter
 from database import get_db
+from dependencies import get_tenant_id
 import models, schemas
 
 router = APIRouter(prefix="/scans", tags=["scans"])
 
-DEFAULT_TENANT_ID = 1
 
-
-# --- Prompt routes (must be before /{scan_id} to avoid int parse collision) ---
+# --- Prompt routes ---
 
 @router.post("/prompts/", response_model=schemas.PromptOut, status_code=201)
-def create_prompt(body: schemas.PromptCreate, db: Session = Depends(get_db)):
-    prompt = models.Prompt(tenant_id=DEFAULT_TENANT_ID, **body.model_dump())
+def create_prompt(
+    body: schemas.PromptCreate,
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    prompt = models.Prompt(tenant_id=tenant_id, **body.model_dump())
     db.add(prompt)
     db.commit()
     db.refresh(prompt)
@@ -21,50 +24,70 @@ def create_prompt(body: schemas.PromptCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/prompts/", response_model=list[schemas.PromptOut])
-def list_prompts(db: Session = Depends(get_db)):
-    return db.query(models.Prompt).all()
+def list_prompts(
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    return db.query(models.Prompt).filter(models.Prompt.tenant_id == tenant_id).all()
+
+
+@router.delete("/prompts/{prompt_id}", status_code=204)
+def delete_prompt(
+    prompt_id: int,
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    prompt = db.query(models.Prompt).filter(
+        models.Prompt.id == prompt_id, models.Prompt.tenant_id == tenant_id
+    ).first()
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+
+    db.query(models.Result).filter(models.Result.prompt_id == prompt_id).delete()
+    db.delete(prompt)
+    db.commit()
 
 
 # --- Stats ---
 
 @router.get("/stats/overview", response_model=schemas.StatsOverview)
-def stats_overview(db: Session = Depends(get_db)):
-    total_scans = db.query(models.TestRun).count()
-    completed = db.query(models.TestRun).filter(models.TestRun.run_status == "completed").count()
-    pending = db.query(models.TestRun).filter(models.TestRun.run_status == "pending").count()
-    total_results = db.query(models.Result).count()
-    vulnerable = db.query(models.Result).filter(models.Result.vulnerability_detected == True).count()
-    safe = db.query(models.Result).filter(models.Result.vulnerability_detected == False).count()
+def stats_overview(
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    suites_q = db.query(models.TestSuite).filter(models.TestSuite.tenant_id == tenant_id)
+    total_scans = suites_q.count()
+    completed = suites_q.filter(models.TestSuite.run_status == "completed").count()
+    pending = suites_q.filter(models.TestSuite.run_status == "pending").count()
+
+    # Results scoped via test suites that belong to this tenant
+    suite_ids = [s.id for s in suites_q.all()]
+    results_q = db.query(models.Result).filter(models.Result.test_run_id.in_(suite_ids))
+    total_results = results_q.count()
+    vulnerable = results_q.filter(models.Result.vulnerability_detected == True).count()
+    safe = results_q.filter(models.Result.vulnerability_detected == False).count()
     detection_rate = round((vulnerable / total_results * 100), 1) if total_results > 0 else 0.0
 
-    by_category = (
-        db.query(models.Prompt.category, func.count(models.TestRun.id).label("count"))
-        .join(models.TestRun, models.TestRun.prompt_id == models.Prompt.id)
-        .group_by(models.Prompt.category)
-        .all()
-    )
+    suites = suites_q.all()
+    all_prompt_ids = [pid for s in suites for pid in (s.prompt_id_list or [])]
+    prompts = db.query(models.Prompt).filter(models.Prompt.id.in_(set(all_prompt_ids))).all()
+    prompt_map = {p.id: p for p in prompts}
 
-    by_risk = (
-        db.query(models.Prompt.risk_level, func.count(models.TestRun.id).label("count"))
-        .join(models.TestRun, models.TestRun.prompt_id == models.Prompt.id)
-        .group_by(models.Prompt.risk_level)
-        .all()
-    )
+    category_counts = Counter(prompt_map[pid].category for pid in all_prompt_ids if pid in prompt_map)
+    risk_counts = Counter(prompt_map[pid].risk_level for pid in all_prompt_ids if pid in prompt_map)
 
-    by_severity = (
-        db.query(models.Result.severity, func.count(models.Result.id).label("count"))
-        .group_by(models.Result.severity)
-        .all()
-    )
+    by_severity = results_q.with_entities(models.Result.severity).all()
+    severity_counts = Counter((r[0] or "none") for r in by_severity)
 
-    vuln_by_category = (
-        db.query(models.Prompt.category, func.count(models.Result.id).label("count"))
-        .join(models.TestRun, models.TestRun.prompt_id == models.Prompt.id)
-        .join(models.Result, models.Result.test_run_id == models.TestRun.id)
-        .filter(models.Result.vulnerability_detected == True)
-        .group_by(models.Prompt.category)
-        .all()
-    )
+    vuln_result_ids = [
+        r.prompt_id for r in results_q.filter(
+            models.Result.vulnerability_detected == True,
+            models.Result.prompt_id != None,
+        ).all()
+    ]
+    vuln_prompts = db.query(models.Prompt).filter(models.Prompt.id.in_(set(vuln_result_ids))).all()
+    vuln_prompt_map = {p.id: p for p in vuln_prompts}
+    vuln_category_counts = Counter(vuln_prompt_map[pid].category for pid in vuln_result_ids if pid in vuln_prompt_map)
 
     return schemas.StatsOverview(
         total_scans=total_scans,
@@ -74,77 +97,136 @@ def stats_overview(db: Session = Depends(get_db)):
         vulnerable=vulnerable,
         safe=safe,
         detection_rate=detection_rate,
-        by_category=[{"category": r[0], "count": r[1]} for r in by_category],
-        by_risk=[{"risk_level": r[0], "count": r[1]} for r in by_risk],
-        by_severity=[{"severity": r[0] or "none", "count": r[1]} for r in by_severity],
-        vuln_by_category=[{"category": r[0], "count": r[1]} for r in vuln_by_category],
+        by_category=[{"category": k, "count": v} for k, v in category_counts.items()],
+        by_risk=[{"risk_level": k, "count": v} for k, v in risk_counts.items()],
+        by_severity=[{"severity": k, "count": v} for k, v in severity_counts.items()],
+        vuln_by_category=[{"category": k, "count": v} for k, v in vuln_category_counts.items()],
     )
 
 
 # --- All results ---
 
 @router.get("/results/all", response_model=list[schemas.ResultOut])
-def get_all_results(db: Session = Depends(get_db)):
-    return db.query(models.Result).all()
+def get_all_results(
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    suite_ids = [
+        s.id for s in db.query(models.TestSuite.id)
+        .filter(models.TestSuite.tenant_id == tenant_id)
+        .all()
+    ]
+    return db.query(models.Result).filter(models.Result.test_run_id.in_(suite_ids)).all()
 
 
-# --- Scan (TestRun) routes ---
+# --- TestSuite (scan) routes ---
 
-@router.post("/", response_model=schemas.TestRunOut, status_code=201)
-def create_scan(body: schemas.TestRunCreate, db: Session = Depends(get_db)):
-    prompt = db.query(models.Prompt).filter(models.Prompt.id == body.prompt_id).first()
-    if not prompt:
-        raise HTTPException(status_code=404, detail="Prompt not found")
+@router.post("/", response_model=schemas.TestSuiteOut, status_code=201)
+def create_scan(
+    body: schemas.TestSuiteCreate,
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    for pid in body.prompt_id_list:
+        prompt = db.query(models.Prompt).filter(
+            models.Prompt.id == pid, models.Prompt.tenant_id == tenant_id
+        ).first()
+        if not prompt:
+            raise HTTPException(status_code=404, detail=f"Prompt {pid} not found")
 
-    llm_model = db.query(models.LLMModel).filter(models.LLMModel.id == body.model_id).first()
-    if not llm_model:
+    if not db.query(models.LLMModel).filter(
+        models.LLMModel.id == body.model_id, models.LLMModel.tenant_id == tenant_id
+    ).first():
         raise HTTPException(status_code=404, detail="Model not found")
 
-    test_run = models.TestRun(
-        tenant_id=DEFAULT_TENANT_ID,
-        prompt_id=body.prompt_id,
+    suite = models.TestSuite(
+        tenant_id=tenant_id,
+        prompt_id_list=body.prompt_id_list,
         model_id=body.model_id,
         run_status="pending",
     )
-    db.add(test_run)
+    db.add(suite)
     db.commit()
-    db.refresh(test_run)
-    return test_run
+    db.refresh(suite)
+    return suite
 
 
-@router.get("/", response_model=list[schemas.TestRunOut])
-def list_scans(db: Session = Depends(get_db)):
-    return db.query(models.TestRun).order_by(models.TestRun.created_at.desc()).all()
+@router.get("/", response_model=list[schemas.TestSuiteOut])
+def list_scans(
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(models.TestSuite)
+        .filter(models.TestSuite.tenant_id == tenant_id)
+        .order_by(models.TestSuite.created_at.desc())
+        .all()
+    )
 
 
-@router.get("/{scan_id}", response_model=schemas.TestRunOut)
-def get_scan(scan_id: int, db: Session = Depends(get_db)):
-    run = db.query(models.TestRun).filter(models.TestRun.id == scan_id).first()
-    if not run:
+@router.get("/{scan_id}", response_model=schemas.TestSuiteOut)
+def get_scan(
+    scan_id: int,
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    suite = db.query(models.TestSuite).filter(
+        models.TestSuite.id == scan_id, models.TestSuite.tenant_id == tenant_id
+    ).first()
+    if not suite:
         raise HTTPException(status_code=404, detail="Scan not found")
-    return run
+    return suite
+
+
+@router.delete("/{scan_id}", status_code=204)
+def delete_scan(
+    scan_id: int,
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    suite = db.query(models.TestSuite).filter(
+        models.TestSuite.id == scan_id, models.TestSuite.tenant_id == tenant_id
+    ).first()
+    if not suite:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    db.query(models.Result).filter(models.Result.test_run_id == scan_id).delete()
+    db.query(models.Log).filter(models.Log.test_run_id == scan_id).delete()
+    db.delete(suite)
+    db.commit()
 
 
 # --- Result routes ---
 
 @router.post("/{scan_id}/results", response_model=schemas.ResultOut, status_code=201)
-def create_result(scan_id: int, body: schemas.ResultCreate, db: Session = Depends(get_db)):
-    run = db.query(models.TestRun).filter(models.TestRun.id == scan_id).first()
-    if not run:
+def create_result(
+    scan_id: int,
+    body: schemas.ResultCreate,
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    suite = db.query(models.TestSuite).filter(
+        models.TestSuite.id == scan_id, models.TestSuite.tenant_id == tenant_id
+    ).first()
+    if not suite:
         raise HTTPException(status_code=404, detail="Scan not found")
 
     result = models.Result(test_run_id=scan_id, **body.model_dump())
     db.add(result)
-
-    run.run_status = "completed"
+    suite.run_status = "completed"
     db.commit()
     db.refresh(result)
     return result
 
 
 @router.get("/{scan_id}/results", response_model=list[schemas.ResultOut])
-def get_scan_results(scan_id: int, db: Session = Depends(get_db)):
-    run = db.query(models.TestRun).filter(models.TestRun.id == scan_id).first()
-    if not run:
+def get_scan_results(
+    scan_id: int,
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    if not db.query(models.TestSuite).filter(
+        models.TestSuite.id == scan_id, models.TestSuite.tenant_id == tenant_id
+    ).first():
         raise HTTPException(status_code=404, detail="Scan not found")
     return db.query(models.Result).filter(models.Result.test_run_id == scan_id).all()
