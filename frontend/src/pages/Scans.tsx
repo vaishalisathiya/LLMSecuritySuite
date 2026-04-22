@@ -274,9 +274,9 @@ export default function Scans() {
                     <td className="px-4 py-3 text-xs" style={{ color: '#64748b' }}>{m?.name || `#${s.model_id}`}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                        s.run_status === 'completed' ? 'bg-emerald-900/40 text-emerald-300' : 'bg-amber-900/40 text-amber-300'
+                        s.run_status === 'completed' ? 'bg-emerald-900/40 text-emerald-300' : s.run_status === 'failed' ? 'bg-red-900/40 text-red-300': 'bg-amber-900/40 text-amber-300'
                       }`}>
-                        {s.run_status === 'completed' ? <CheckCircle2 size={10} /> : <Activity size={10} />}
+                        {s.run_status === 'completed' ? <CheckCircle2 size={10} /> : s.run_status === 'failed' ? <AlertTriangle size={10} /> : <Activity size={10} />}
                         {s.run_status}
                       </span>
                     </td>
