@@ -18,15 +18,18 @@ class UserOut(BaseModel):
 
 class LoginInfo(BaseModel):
     location: str
-    credential_reference: str
+    action: str
+    credential_reference: Optional[str] = None
+    follow_up: Optional[str] = None
 
 
 class LLMModelCreate(BaseModel):
     name: str
     provider: str
     model_type: str
+    interface_type: str
     access_method: str
-    access_url: Optional[str] = None #if browser based, where to look to enter data
+    access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
     login_info: Optional[List[LoginInfo]] = []
@@ -36,8 +39,9 @@ class LLMModelOut(BaseModel):
     name: str
     provider: str
     model_type: str
+    interface_type: str
     access_method: str
-    access_url: Optional[str] = None #if browser based, where to look to enter data
+    access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
     login_info: Optional[List[LoginInfo]] = []
@@ -87,7 +91,7 @@ class TestSuiteOut(BaseModel):
 
 class ResultCreate(BaseModel):
     prompt_id: int
-    test_suite_id: int
+    test_run_id: int
     output_text: str
     vulnerability_detected: bool
     detection_method: Optional[str] = None
@@ -99,7 +103,7 @@ class ResultCreate(BaseModel):
 class ResultOut(BaseModel):
     id: int
     prompt_id: int
-    test_suite_id: int
+    test_run_id: int
     output_text: str
     vulnerability_detected: bool
     notes: str
@@ -147,13 +151,13 @@ class LLMPrompt(BaseModel):
     risk_level: str
     created_by: int
     acceptance_criteria: str
+    prompt_id: Optional[int] = None
 
 class LLMModel(BaseModel):
     name: str
     provider: str
     model_type: str
     access_method: str
-    acceptance_criteria: str
     access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
@@ -162,10 +166,12 @@ class LLMModel(BaseModel):
 class LLMPromptRequest(BaseModel):
     prompt: LLMPrompt
     model: LLMModel
-    
+    scan_id: Optional[int] = None
+
 class LLMInteractRequest(BaseModel):
     prompt_list: List[LLMPrompt]
     model: LLMModel
+    scan_id: Optional[int] = None
 
 class LLMPromptResponse(BaseModel):
     response: str
