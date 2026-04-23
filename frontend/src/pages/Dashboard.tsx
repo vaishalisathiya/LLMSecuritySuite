@@ -4,9 +4,9 @@ import type { StatsOverview, TestRun } from '../api';
 import { getStatsOverview, getScans, getPrompts, getModels } from '../api';
 import type { Prompt, Model } from '../api';
 import { ShieldAlert, ShieldCheck, Zap, CheckCircle2 } from 'lucide-react';
+import { SURFACE_CARD } from '../ui/surfaces';
 
-const cardShell =
-  'rounded-xl border border-white/[0.08] bg-surface-panel shadow-[0_18px_48px_-28px_rgba(0,0,0,0.85),0_1px_0_0_rgba(255,255,255,0.03)]';
+const cardShell = SURFACE_CARD;
 
 const CATEGORY_BADGE: Record<string, { bg: string; fg: string; label: string }> = {
   prompt_injection: { bg: 'rgba(34,255,233,0.12)', fg: '#22ffe9', label: 'PROMPT INJECTION' },
@@ -50,8 +50,8 @@ function StatCard({
   iconMuted?: boolean;
 }) {
   return (
-    <div className={`${cardShell} flex h-[112px] flex-col justify-center px-6 py-4`}>
-      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted/70">
+    <div className={`${cardShell} flex min-h-[118px] flex-col justify-center p-6`}>
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted/70">
         {label}
       </p>
       <div className="flex items-end gap-2">
@@ -75,13 +75,13 @@ function AttackCategoryPanel({ byCategory }: { byCategory: { category: string; c
   const max = Math.max(...CATEGORY_AXIS.map((k) => countBy[k] ?? 0), 1);
 
   return (
-    <div className={`${cardShell} flex min-h-[360px] flex-col px-6 py-6`}>
+    <div className={`${cardShell} flex min-h-[340px] flex-col p-7`}>
       <p className="text-sm font-semibold uppercase tracking-wide text-fg-strong/90">
         Scans by Attack Category
       </p>
 
-      <div className="mt-5 flex flex-1 flex-col justify-end">
-        <div className="flex h-[200px] items-end justify-between gap-6 px-0 pb-1">
+      <div className="mt-6 flex flex-1 flex-col justify-end">
+        <div className="flex h-[188px] items-end justify-between gap-6 px-1 pb-1">
           {CATEGORY_AXIS.map((key) => {
             const n = countBy[key] ?? 0;
             const h = Math.round((n / max) * 120);
@@ -114,12 +114,12 @@ function RiskPanel({ byRisk }: { byRisk: { risk_level: string; count: number }[]
   const lowPct = total > 0 ? Math.round((low / total) * 100) : 0;
 
   return (
-    <div className={`${cardShell} px-6 py-6`}>
-      <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70">
+    <div className={`${cardShell} p-7`}>
+      <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70">
         Risk Level Distribution
       </p>
 
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-strong/90">High Risk</p>
@@ -146,12 +146,12 @@ function RiskPanel({ byRisk }: { byRisk: { risk_level: string; count: number }[]
 
 function CoveragePanel({ models, prompts, completed }: { models: number; prompts: number; completed: number }) {
   return (
-    <div className={`${cardShell} border-l-[3px] border-l-accent px-6 py-6`}>
-      <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70">
+    <div className={`${cardShell} border-l-[3px] border-l-accent p-7`}>
+      <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70">
         Test Coverage
       </p>
 
-      <div className="space-y-5 text-[13px]">
+      <div className="space-y-6 text-[13px]">
         <div className="flex items-center justify-between">
           <p className="font-medium text-fg-strong/90">Models Tested</p>
           <p className="font-medium text-accent">{models}</p>
@@ -187,112 +187,116 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-[1440px] px-6 pb-14 pt-10 lg:px-10">
-      {/* Top row: 4 equal stat cards */}
-      <div className="mb-7 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="TOTAL SCANS" value={stats?.total_scans ?? 0} icon={Zap} iconColor="#22ffe9" />
-        <StatCard label="VULNERABILITIES" value={stats?.vulnerable ?? 0} icon={ShieldAlert} iconColor="rgba(248,113,113,0.65)" iconMuted />
-        <StatCard label="SAFE RESULTS" value={stats?.safe ?? 0} icon={ShieldCheck} iconColor="#22ffe9" />
-        <StatCard label="DETECTION RATE" value={`${stats?.detection_rate ?? 0}%`} />
-      </div>
-
-      {/* Main layout: ~70% left, stacked right */}
-      <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <AttackCategoryPanel byCategory={stats?.by_category ?? []} />
-        <div className="flex flex-col gap-5">
-          <RiskPanel byRisk={stats?.by_risk ?? []} />
-          <CoveragePanel models={modelsList.length} prompts={prompts.length} completed={stats?.completed ?? 0} />
-        </div>
-      </div>
-
-      {/* Recent Security Scans table */}
-      <div className={`${cardShell} overflow-hidden`}>
-        <div className="flex items-baseline justify-between border-b border-white/[0.04] px-6 py-3">
-          <p className="text-sm font-semibold text-fg-strong/90">Recent Security Scans</p>
-          <Link
-            to="/reports"
-            className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
-          >
-            Download full report
-          </Link>
+    <div className="mx-auto w-full max-w-[1280px] px-6 pb-16 pt-11 sm:px-8 lg:px-10">
+      <div className="flex flex-col gap-10">
+        {/* KPI row */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="TOTAL SCANS" value={stats?.total_scans ?? 0} icon={Zap} iconColor="#22ffe9" />
+          <StatCard label="VULNERABILITIES" value={stats?.vulnerable ?? 0} icon={ShieldAlert} iconColor="rgba(248,113,113,0.65)" iconMuted />
+          <StatCard label="SAFE RESULTS" value={stats?.safe ?? 0} icon={ShieldCheck} iconColor="#22ffe9" />
+          <StatCard label="DETECTION RATE" value={`${stats?.detection_rate ?? 0}%`} />
         </div>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-white/[0.06] bg-black/20">
-              {['Scan ID', 'Prompt', 'Category', 'Risk', 'Model', 'Status', 'Time'].map((h) => (
-                <th
-                  key={h}
-                  className={`px-4 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted/70 ${
-                    h === 'Time' ? 'text-right' : ''
-                  }`}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {recentScans.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-16 text-center text-sm text-fg-muted">
-                  No scans yet. Run your first security scan to see results.
-                </td>
-              </tr>
-            ) : (
-              recentScans.map((s) => {
-                const firstPid = s.prompt_id_list?.[0];
-                const p = firstPid != null ? prompts.find((x) => x.id === firstPid) : undefined;
-                const m = modelsList.find((x) => x.id === s.model_id);
-                const badge = CATEGORY_BADGE[p?.category || ''] ?? {
-                  bg: 'rgba(148,163,184,0.12)',
-                  fg: 'rgba(148,163,184,0.95)',
-                  label: (p?.category || '').toUpperCase(),
-                };
-                const riskDot = p?.risk_level === 'high' ? '#22ffe9' : 'rgba(148,163,184,0.6)';
+        {/* Chart + right column — ~70% main / stacked right */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <AttackCategoryPanel byCategory={stats?.by_category ?? []} />
+          <div className="flex flex-col gap-6">
+            <RiskPanel byRisk={stats?.by_risk ?? []} />
+            <CoveragePanel models={modelsList.length} prompts={prompts.length} completed={stats?.completed ?? 0} />
+          </div>
+        </div>
 
-                return (
-                  <tr key={s.id} className="border-b border-white/[0.05] hover:bg-white/[0.02]">
-                    <td className="align-middle px-4 py-2.5 text-xs font-medium text-accent">#SCN-{s.id}</td>
-                    <td className="max-w-[320px] align-middle px-4 py-2.5">
-                      <p className="truncate text-xs text-fg" title={p?.input_text}>
-                        {p?.input_text || (firstPid != null ? `Prompt #${firstPid}` : '—')}
-                      </p>
-                    </td>
-                    <td className="align-middle px-4 py-2.5">
-                      {p && (
-                        <span
-                          className="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]"
-                          style={{ backgroundColor: badge.bg, color: badge.fg }}
-                        >
-                          {badge.label}
-                        </span>
-                      )}
-                    </td>
-                    <td className="align-middle px-4 py-2.5">
-                      {p && (
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: riskDot }} />
-                          <span className="text-xs text-fg-strong/90">{p.risk_level === 'high' ? 'High' : 'Low'}</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="align-middle px-4 py-2.5 text-xs text-fg-muted">{m?.name || `Model #${s.model_id}`}</td>
-                    <td className="align-middle px-4 py-2.5">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent">
-                        <CheckCircle2 size={12} />
-                        completed
-                      </span>
-                    </td>
-                    <td className="align-middle px-4 py-2.5 text-right text-xs leading-none text-fg-muted tabular-nums">
-                      {formatRelativeTime(s.created_at)}
+        {/* Recent scans table */}
+        <div className={`${cardShell} overflow-hidden`}>
+          <div className="flex items-baseline justify-between border-b border-white/[0.04] px-7 py-5">
+            <p className="text-sm font-semibold text-fg-strong/90">Recent Security Scans</p>
+            <Link
+              to="/reports"
+              className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
+            >
+              Download full report
+            </Link>
+          </div>
+
+          <div className="overflow-x-auto px-7 pb-8 pt-5">
+            <table className="w-full min-w-[860px] text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] bg-black/20">
+                  {['Scan ID', 'Prompt', 'Category', 'Risk', 'Model', 'Status', 'Time'].map((h) => (
+                    <th
+                      key={h}
+                      className={`px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted/70 ${
+                        h === 'Time' ? 'text-right' : ''
+                      }`}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {recentScans.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-5 py-20 text-center text-sm text-fg-muted">
+                      No scans yet. Run your first security scan to see results.
                     </td>
                   </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                ) : (
+                  recentScans.map((s) => {
+                    const firstPid = s.prompt_id_list?.[0];
+                    const p = firstPid != null ? prompts.find((x) => x.id === firstPid) : undefined;
+                    const m = modelsList.find((x) => x.id === s.model_id);
+                    const badge = CATEGORY_BADGE[p?.category || ''] ?? {
+                      bg: 'rgba(148,163,184,0.12)',
+                      fg: 'rgba(148,163,184,0.95)',
+                      label: (p?.category || '').toUpperCase(),
+                    };
+                    const riskDot = p?.risk_level === 'high' ? '#22ffe9' : 'rgba(148,163,184,0.6)';
+
+                    return (
+                      <tr key={s.id} className="border-b border-white/[0.05] hover:bg-white/[0.02]">
+                        <td className="align-middle px-5 py-3.5 text-xs font-medium text-accent">#SCN-{s.id}</td>
+                        <td className="max-w-[320px] align-middle px-5 py-3.5">
+                          <p className="truncate text-xs text-fg" title={p?.input_text}>
+                            {p?.input_text || (firstPid != null ? `Prompt #${firstPid}` : '—')}
+                          </p>
+                        </td>
+                        <td className="align-middle px-5 py-3.5">
+                          {p && (
+                            <span
+                              className="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]"
+                              style={{ backgroundColor: badge.bg, color: badge.fg }}
+                            >
+                              {badge.label}
+                            </span>
+                          )}
+                        </td>
+                        <td className="align-middle px-5 py-3.5">
+                          {p && (
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full" style={{ backgroundColor: riskDot }} />
+                              <span className="text-xs text-fg-strong/90">{p.risk_level === 'high' ? 'High' : 'Low'}</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="align-middle px-5 py-3.5 text-xs text-fg-muted">{m?.name || `Model #${s.model_id}`}</td>
+                        <td className="align-middle px-5 py-3.5">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent">
+                            <CheckCircle2 size={12} />
+                            completed
+                          </span>
+                        </td>
+                        <td className="align-middle px-5 py-3.5 text-right text-xs leading-none text-fg-muted tabular-nums">
+                          {formatRelativeTime(s.created_at)}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -13,33 +13,35 @@ const nav = [
 export default function Layout() {
   return (
     <div className="flex min-h-screen bg-surface-void text-fg">
-      <aside className="flex w-64 flex-shrink-0 flex-col border-r border-border-subtle bg-surface-base">
-        <div className="border-b border-border-subtle px-5 py-6">
-          <div className="flex items-start gap-2.5">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-accent/30 bg-accent-secondary/30 text-accent">
-              <ShieldAlert size={15} strokeWidth={2} />
+      <aside className="flex w-[304px] flex-shrink-0 flex-col border-r border-border-subtle bg-surface-base">
+        {/* Brand — dominant, generous vertical rhythm */}
+        <div className="border-b border-border-subtle px-7 pb-12 pt-10">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-accent/35 bg-accent-secondary/35 text-accent shadow-[0_0_0_1px_rgba(34,255,233,0.08)]">
+              <ShieldAlert size={22} strokeWidth={2} />
             </div>
-            <div className="min-w-0">
-              <p className="font-heading text-[15px] font-semibold leading-tight tracking-tight text-accent">
+            <div className="min-w-0 pt-0.5">
+              <p className="font-heading text-[20px] font-semibold leading-snug tracking-tight text-accent lg:text-[22px]">
                 LLM Security Suite
               </p>
-              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted">
+              <p className="mt-3 text-[12px] font-semibold uppercase tracking-[0.26em] text-fg-muted">
                 Vulnerability Lab
               </p>
             </div>
           </div>
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 py-4">
+        {/* Nav — pushed down from brand; tall rows; clear vertical separation */}
+        <nav className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-8 pt-14">
           {nav.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/'}
               className={({ isActive }) =>
-                `relative flex items-center gap-3 rounded-lg py-3.5 pl-3 pr-3 text-sm font-medium transition-colors ${
+                `relative flex items-center gap-4 rounded-xl py-5 pl-4 pr-4 text-[16px] font-medium leading-snug transition-colors ${
                   isActive
-                    ? 'text-accent before:pointer-events-none before:absolute before:right-0 before:top-1.5 before:bottom-1.5 before:block before:w-0.5 before:rounded-full before:bg-accent'
+                    ? 'text-accent before:pointer-events-none before:absolute before:right-0 before:top-3 before:bottom-3 before:block before:w-0.5 before:rounded-full before:bg-accent'
                     : 'text-fg-muted hover:bg-white/[0.04] hover:text-fg-strong'
                 }`
               }
@@ -47,7 +49,7 @@ export default function Layout() {
               {({ isActive }) => (
                 <>
                   <Icon
-                    size={16}
+                    size={22}
                     strokeWidth={isActive ? 2.25 : 2}
                     className={`flex-shrink-0 ${isActive ? 'text-accent' : 'opacity-90'}`}
                   />
@@ -58,12 +60,13 @@ export default function Layout() {
           ))}
         </nav>
 
-        <div className="px-3 pb-5 pt-2">
+        {/* New Scan — anchored bottom with clear separation from nav */}
+        <div className="mt-auto border-t border-white/[0.04] px-5 pb-9 pt-8">
           <NavLink
             to="/scans?new=1"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent py-3 text-sm font-semibold text-surface-void transition-colors hover:bg-accent/90"
+            className="flex w-full items-center justify-center gap-3 rounded-xl bg-accent py-4 text-[16px] font-semibold text-surface-void transition-colors hover:bg-accent/90"
           >
-            <Plus size={17} strokeWidth={2.5} />
+            <Plus size={20} strokeWidth={2.5} />
             New Scan
           </NavLink>
         </div>
