@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { getPrompts, createPrompt, getUsers } from '../api';
 import type { Prompt, User } from '../api';
 import { Plus, FileText, X, AlertTriangle, Shield, Database, CheckCircle } from 'lucide-react';
+import { Page, PageHeader } from '../ui/page';
+import { SURFACE_CARD } from '../ui/surfaces';
 
 const CATEGORIES = ['prompt_injection', 'jailbreak', 'data_exfiltration', 'normal'];
 const RISK_LEVELS = ['low', 'medium', 'high'];
 
-const cardShell =
-  'rounded-xl border border-white/[0.08] bg-surface-panel shadow-[0_18px_48px_-28px_rgba(0,0,0,0.85),0_1px_0_0_rgba(255,255,255,0.03)]';
+const cardShell = SURFACE_CARD;
 
 const CAT_CONFIG: Record<string, { icon: React.FC<{ size?: number; className?: string }>; label: string; bg: string; text: string; description: string }> = {
   prompt_injection: { icon: Shield, label: 'Prompt Injection', bg: '#4c1d9530', text: '#c4b5fd', description: 'Attempts to override system instructions' },
@@ -46,23 +47,21 @@ export default function Prompts() {
   }, {});
 
   return (
-    <div className="mx-auto max-w-[1440px] px-6 pb-14 pt-10 lg:px-10">
-      <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-fg-strong/90">Prompt Library</p>
-          <p className="mt-1 max-w-xl text-sm text-fg-muted">
-            Security test prompts organized by attack category and risk level.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
-        >
-          <Plus size={14} strokeWidth={2.5} />
-          Add Prompt
-        </button>
-      </div>
+    <Page>
+      <PageHeader
+        title="Prompt Library"
+        description="Security test prompts organized by attack category and risk level."
+        actions={
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
+          >
+            <Plus size={14} strokeWidth={2.5} />
+            Add Prompt
+          </button>
+        }
+      />
 
       {/* Category overview cards */}
       <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
@@ -292,6 +291,6 @@ export default function Prompts() {
           </tbody>
         </table>
       </div>
-    </div>
+    </Page>
   );
 }

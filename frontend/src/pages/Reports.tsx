@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { getAllResults, getScans, getPrompts, getModels } from '../api';
 import type { Result, TestRun, Prompt, Model } from '../api';
 import { FileBarChart2, ShieldAlert, ShieldCheck, Download, Filter, CheckCircle2, Activity } from 'lucide-react';
+import { Page, PageHeader } from '../ui/page';
+import { SURFACE_CARD } from '../ui/surfaces';
 
-const cardShell =
-  'rounded-xl border border-white/[0.08] bg-surface-panel shadow-[0_18px_48px_-28px_rgba(0,0,0,0.85),0_1px_0_0_rgba(255,255,255,0.03)]';
+const cardShell = SURFACE_CARD;
 
 const SEV_CONFIG: Record<string, { bg: string; text: string; border: string }> = {
   critical: { bg: '#450a0a', text: '#fca5a5', border: '#dc2626' },
@@ -100,23 +101,21 @@ export default function Reports() {
   const categories = Array.from(new Set(prompts.map((p) => p.category))).sort();
 
   return (
-    <div className="mx-auto max-w-[1440px] px-6 pb-14 pt-10 lg:px-10">
-      <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-fg-strong/90">Reports</p>
-          <p className="mt-1 max-w-xl text-sm text-fg-muted">
-            Review scan evaluation findings — filter, triage, and export.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={exportJSON}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-surface-raised px-3 py-2 text-xs font-medium text-fg-muted transition-colors hover:bg-white/[0.04] hover:text-fg-strong"
-        >
-          <Download size={14} />
-          Export JSON
-        </button>
-      </div>
+    <Page>
+      <PageHeader
+        title="Reports"
+        description="Review scan evaluation findings — filter, triage, and export."
+        actions={
+          <button
+            type="button"
+            onClick={exportJSON}
+            className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-surface-raised px-3 py-2 text-xs font-medium text-fg-muted transition-colors hover:bg-white/[0.04] hover:text-fg-strong"
+          >
+            <Download size={14} />
+            Export JSON
+          </button>
+        }
+      />
 
       <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
         <div className={`${cardShell} flex h-[112px] flex-col justify-center px-6 py-4`}>
@@ -299,6 +298,6 @@ export default function Reports() {
           </div>
         )}
       </div>
-    </div>
+    </Page>
   );
 }

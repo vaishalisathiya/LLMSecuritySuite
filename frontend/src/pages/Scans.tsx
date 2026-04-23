@@ -6,9 +6,10 @@ import {
   Plus, ChevronDown, ChevronRight, X, ShieldCheck, ShieldAlert, Zap, Activity, CheckCircle2, AlertTriangle, Key,
   Filter, Download,
 } from 'lucide-react';
+import { Page, PageHeader } from '../ui/page';
+import { SURFACE_PANEL_LG } from '../ui/surfaces';
 
-const shell =
-  'rounded-2xl border border-white/[0.08] bg-surface-panel shadow-[0_24px_56px_-28px_rgba(0,0,0,0.9)]';
+const shell = SURFACE_PANEL_LG;
 
 function formatRelativeTime(iso: string | null): string {
   if (!iso) return '—';
@@ -193,7 +194,11 @@ export default function Scans() {
   };
 
   return (
-    <div className="mx-auto max-w-[1440px] px-6 pb-14 pt-10 lg:px-10">
+    <Page>
+      <PageHeader
+        title="Security Scans"
+        description="Run security scans against registered models and track results over time."
+      />
       {(streaming || streamEvents.length > 0) && (
         <div className={`${shell} mb-6 p-5`}>
           <div className="mb-3 flex items-center gap-2">
@@ -529,6 +534,6 @@ export default function Scans() {
           </div>
         </div>
       </div>
-    </div>
+    </Page>
   );
 }
