@@ -14,6 +14,29 @@ class UserOut(BaseModel):
         from_attributes = True
 
 
+class RegisterIn(BaseModel):
+    name: str
+    username: str
+    email: str
+    password: str
+
+
+class LoginIn(BaseModel):
+    username: str
+    password: str
+
+
+class AuthOut(BaseModel):
+    id: int
+    name: str
+    username: Optional[str]
+    email: str
+    role: str
+
+    class Config:
+        from_attributes = True
+
+
 # --- Model + Access ---
 
 class LoginInfo(BaseModel):

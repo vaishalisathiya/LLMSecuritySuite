@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { ShieldAlert, Eye, EyeOff } from 'lucide-react';
+import { registerUser, loginUser } from '../api';
 
 type Mode = 'login' | 'register';
 
@@ -13,21 +14,37 @@ export default function AuthPage() {
 
   const [mode, setMode] = useState<Mode>('login');
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ name: '', username: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [form, setForm] = useState({ name: '', username: '', email: '', password: '' });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setError('');
   }
 
   function switchMode(next: Mode) {
     setMode(next);
-    setForm({ name: '', username: '', password: '' });
+    setError('');
+    setForm({ name: '', username: '', email: '', password: '' });
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    localStorage.setItem('user', JSON.stringify({ name: form.name || form.username, username: form.username }));
-    navigate('/');
+    setLoading(true);
+    setError('');
+    try {
+      const user =
+        mode === 'register'
+          ? await registerUser({ name: form.name, username: form.username, email: form.email, password: form.password })
+          : await loginUser({ username: form.username, password: form.password });
+      localStorage.setItem('user', JSON.stringify(user));
+      navigate('/');
+    } catch (err: any) {
+      setError(err.response?.data?.detail ?? 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   const inputStyle = { paddingLeft: '0.625rem', paddingRight: '0.625rem', paddingTop: '0.375rem', paddingBottom: '0.375rem' };
@@ -96,6 +113,7 @@ export default function AuthPage() {
                 <input
                   name="email"
                   type="email"
+                  value={form.email}
                   onChange={handleChange}
                   required
                   placeholder="you@company.com"
@@ -131,11 +149,18 @@ export default function AuthPage() {
               </div>
             </div>
 
+            {error && (
+              <p className="rounded-xl border border-red-500/20 bg-red-500/[0.08] px-3.5 py-2.5 text-xs leading-relaxed text-red-400">
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="mt-1 flex w-full items-center justify-center rounded-xl bg-accent py-3 text-sm font-semibold text-surface-void transition-colors hover:bg-accent/90"
+              disabled={loading}
+              className="mt-1 flex w-full items-center justify-center rounded-xl bg-accent py-3 text-sm font-semibold text-surface-void transition-colors hover:bg-accent/90 disabled:opacity-50"
             >
-              {mode === 'login' ? 'Sign In' : 'Create Account'}
+              {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
             </button>
 
             {/* Toggle link */}

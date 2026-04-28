@@ -18,7 +18,9 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False)
     name = Column(Text, nullable=False)
+    username = Column(Text, unique=True, nullable=True)
     email = Column(Text, unique=True, nullable=False)
+    password_hash = Column(Text, nullable=True)
     role = Column(Text, nullable=False, default="viewer")
 
     prompts = relationship("Prompt", back_populates="creator")
