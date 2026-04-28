@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { LayoutDashboard, Cpu, FileText, Shield, ShieldAlert, FileBarChart2, Plus } from 'lucide-react';
 import TopBar from './TopBar';
+import { useState } from 'react';
 
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -10,10 +11,50 @@ const nav = [
   { to: '/models', label: 'Model Registry', icon: Cpu },
 ];
 
+const SIDEBAR_MIN = 200;
+const SIDEBAR_MAX = 500;
+const SIDEBAR_DEFAULT = 304;
+
 export default function Layout() {
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const stored = localStorage.getItem('sidebarWidth');
+    return stored ? Number(stored) : SIDEBAR_DEFAULT;
+  });
+
+  // Scales from 1 at default width down to ~0.66 at minimum; never exceeds 1
+  const fontScale = Math.min(1, sidebarWidth / SIDEBAR_DEFAULT);
+
+  function handleResizeMouseDown(e: React.MouseEvent) {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    function onMouseMove(ev: MouseEvent) {
+      const next = Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, startWidth + ev.clientX - startX));
+      setSidebarWidth(next);
+    }
+
+    function onMouseUp(ev: MouseEvent) {
+      const final = Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, startWidth + ev.clientX - startX));
+      localStorage.setItem('sidebarWidth', String(final));
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }
+
   return (
     <div className="flex min-h-screen bg-surface-void text-fg">
-      <aside className="flex w-[304px] flex-shrink-0 flex-col border-r border-border-subtle bg-surface-base">
+      <aside
+        className="relative flex flex-shrink-0 flex-col border-r border-border-subtle bg-surface-base"
+        style={{ width: sidebarWidth }}
+      >
         {/* Brand — dominant, generous vertical rhythm */}
         <div className="border-b border-border-subtle px-7 pb-12 pt-10">
           <div className="flex items-start gap-4">
@@ -21,10 +62,16 @@ export default function Layout() {
               <ShieldAlert size={22} strokeWidth={2} />
             </div>
             <div className="min-w-0 pt-0.5">
-              <p className="font-heading text-[20px] font-semibold leading-snug tracking-tight text-accent lg:text-[22px]">
+              <p
+                className="font-heading font-semibold leading-snug tracking-tight text-accent"
+                style={{ fontSize: Math.max(13, 20 * fontScale) }}
+              >
                 LLM Security Suite
               </p>
-              <p className="mt-3 text-[12px] font-semibold uppercase tracking-[0.26em] text-fg-muted">
+              <p
+                className="mt-3 font-semibold uppercase tracking-[0.26em] text-fg-muted"
+                style={{ fontSize: Math.max(9, 12 * fontScale) }}
+              >
                 Vulnerability Lab
               </p>
             </div>
@@ -38,8 +85,9 @@ export default function Layout() {
               key={to}
               to={to}
               end={to === '/'}
+              style={{ fontSize: Math.max(11, 16 * fontScale) }}
               className={({ isActive }) =>
-                `relative flex items-center gap-4 rounded-xl py-5 pl-4 pr-4 text-[16px] font-medium leading-snug transition-colors ${
+                `relative flex items-center gap-4 rounded-xl py-5 pl-4 pr-4 font-medium leading-snug transition-colors ${
                   isActive
                     ? 'text-accent before:pointer-events-none before:absolute before:right-0 before:top-3 before:bottom-3 before:block before:w-0.5 before:rounded-full before:bg-accent'
                     : 'text-fg-muted hover:bg-white/[0.04] hover:text-fg-strong'
@@ -64,12 +112,19 @@ export default function Layout() {
         <div className="mt-auto border-t border-white/[0.04] px-5 pb-9 pt-8">
           <NavLink
             to="/scans?new=1"
-            className="flex w-full items-center justify-center gap-3 rounded-xl bg-accent py-4 text-[16px] font-semibold text-surface-void transition-colors hover:bg-accent/90"
+            style={{ fontSize: Math.max(11, 16 * fontScale) }}
+            className="flex w-full items-center justify-center gap-3 rounded-xl bg-accent py-4 font-semibold text-surface-void transition-colors hover:bg-accent/90"
           >
             <Plus size={20} strokeWidth={2.5} />
             New Scan
           </NavLink>
         </div>
+
+        {/* Resize handle */}
+        <div
+          onMouseDown={handleResizeMouseDown}
+          className="absolute inset-y-0 right-0 w-1 cursor-col-resize transition-colors hover:bg-accent/50 active:bg-accent/70 z-10"
+        />
       </aside>
 
       <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface-void">
