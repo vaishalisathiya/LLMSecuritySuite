@@ -18,8 +18,9 @@ class UserOut(BaseModel):
 
 class LoginInfo(BaseModel):
     location: str
-    credential_reference: str
-
+    action: str  # input, click
+    credential_reference: Optional[str] = None
+    follow_up: Optional[str] = None  # enter, click, etc.
 
 class LLMModelCreate(BaseModel):
     name: str
@@ -163,12 +164,12 @@ class LLMPromptRequest(BaseModel):
     model: LLMModel
     scan_id: Optional[int] = None
 
-class LLMInteractRequest(BaseModel):
-    prompt_list: List[LLMPrompt]
-    model: LLMModel
-    scan_id: Optional[int] = None
-
 class LLMPromptResponse(BaseModel):
     response: str
     provider: str
     model: str
+
+class LLMInteractRequest(BaseModel):
+    prompt_list: List[LLMPrompt]
+    model: LLMModel
+    scan_id: Optional[int] = None

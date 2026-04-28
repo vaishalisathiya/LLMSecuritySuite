@@ -232,6 +232,7 @@ export default function Dashboard() {
                       {h}
                     </th>
                   ))}
+
                 </tr>
               </thead>
               <tbody>
