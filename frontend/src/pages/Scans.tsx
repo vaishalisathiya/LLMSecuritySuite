@@ -1,22 +1,53 @@
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useMemo, useState, Fragment } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getScans, createScan, getPrompts, getModels, getScanResults, startJob, streamJobResults } from '../api';
 import type { TestRun, Prompt, Model, Result, StreamEvent } from '../api';
-import { Plus, ChevronDown, ChevronRight, X, ShieldCheck, ShieldAlert, Zap, Activity, CheckCircle2, AlertTriangle, Key } from 'lucide-react';
+import {
+  Plus, ChevronDown, ChevronRight, X, ShieldCheck, ShieldAlert, Zap, Activity, CheckCircle2, AlertTriangle, Key,
+  Filter, Download,
+} from 'lucide-react';
+import { Page, PageHeader } from '../ui/page';
+import { SURFACE_PANEL_LG } from '../ui/surfaces';
 
-const CATEGORY_COLOR: Record<string, { bg: string; text: string; label: string }> = {
-  prompt_injection: { bg: '#4c1d9540', text: '#c4b5fd', label: 'Prompt Injection' },
-  jailbreak: { bg: '#7f1d1d40', text: '#fca5a5', label: 'Jailbreak' },
-  data_exfiltration: { bg: '#78350f40', text: '#fcd34d', label: 'Data Exfiltration' },
-  normal: { bg: '#1e3a2f40', text: '#6ee7b7', label: 'Baseline' },
-};
+const shell = SURFACE_PANEL_LG;
 
-const SEV_LABELS: Record<string, { color: string }> = {
-  critical: { color: '#ef4444' },
-  high: { color: '#f97316' },
-  medium: { color: '#f59e0b' },
-  low: { color: '#10b981' },
-  none: { color: '#475569' },
-};
+function formatRelativeTime(iso: string | null): string {
+  if (!iso) return '—';
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return '—';
+  const diff = Date.now() - t;
+  const min = Math.floor(diff / 60000);
+  const hr = Math.floor(min / 60);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min}m ago`;
+  if (hr < 24) return `${hr}h ago`;
+  return new Date(iso).toLocaleString();
+}
+
+function escapeCsvCell(v: unknown): string {
+  const s = String(v ?? '');
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function statusPill(status: string): { label: string; className: string } {
+  if (status === 'completed') {
+    return { label: 'COMPLETED', className: 'bg-emerald-900/45 text-emerald-300 ring-1 ring-emerald-500/20' };
+  }
+  if (status === 'pending') {
+    return { label: 'RUNNING', className: 'bg-blue-900/40 text-blue-300 ring-1 ring-blue-500/20' };
+  }
+  return {
+    label: status.replace(/_/g, ' ').toUpperCase(),
+    className: 'bg-surface-raised text-fg-muted ring-1 ring-white/[0.08]',
+  };
+}
+
+function riskScoreFromResults(list: Result[] | undefined): number | null {
+  if (!list?.length) return null;
+  const vuln = list.filter((x) => x.vulnerability_detected).length;
+  return Math.min(100, Math.round((vuln / list.length) * 100));
+}
 
 export default function Scans() {
   const [scans, setScans] = useState<TestRun[]>([]);
@@ -29,27 +60,81 @@ export default function Scans() {
   const [results, setResults] = useState<Record<number, Result[]>>({});
   const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
   const [streaming, setStreaming] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterQuery, setFilterQuery] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const load = () => Promise.all([getScans(), getPrompts(), getModels()])
-    .then(([s, p, m]) => { setScans(s); setPrompts(p); setModelsList(m); });
+  const load = () =>
+    Promise.all([getScans(), getPrompts(), getModels()]).then(([s, p, m]) => {
+      setScans(s);
+      setPrompts(p);
+      setModelsList(m);
+    });
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
+
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return;
+    setShowForm(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete('new');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const filteredScans = useMemo(() => {
+    const q = filterQuery.trim().toLowerCase();
+    if (!q) return scans;
+    return scans.filter((s) => {
+      const m = modelsList.find((x) => x.id === s.model_id);
+      return (
+        String(s.id).includes(q) ||
+        `scn-${s.id}`.includes(q) ||
+        (m?.name || '').toLowerCase().includes(q) ||
+        (m?.provider || '').toLowerCase().includes(q)
+      );
+    });
+  }, [scans, filterQuery, modelsList]);
+
+  const exportCsv = () => {
+    const header = ['operation_id', 'target_asset', 'status', 'risk_score', 'execution_time'].map(escapeCsvCell).join(',');
+    const lines = filteredScans.map((s) => {
+      const m = modelsList.find((x) => x.id === s.model_id);
+      const score = riskScoreFromResults(results[s.id]);
+      return [
+        escapeCsvCell(`SCN-${s.id}`),
+        escapeCsvCell(m?.name || s.model_id),
+        escapeCsvCell(s.run_status),
+        escapeCsvCell(score ?? ''),
+        escapeCsvCell(s.created_at || ''),
+      ].join(',');
+    });
+    const blob = new Blob([[header, ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'scan-operations.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const expand = async (id: number) => {
-    if (expanded === id) { setExpanded(null); return; }
+    if (expanded === id) {
+      setExpanded(null);
+      return;
+    }
     setExpanded(id);
     if (!results[id]) {
       const r = await getScanResults(id);
-      setResults(prev => ({ ...prev, [id]: r }));
+      setResults((prev) => ({ ...prev, [id]: r }));
     }
   };
 
   const togglePrompt = (id: number) => {
-    setForm(f => ({
+    setForm((f) => ({
       ...f,
-      prompt_ids: f.prompt_ids.includes(id)
-        ? f.prompt_ids.filter(p => p !== id)
-        : [...f.prompt_ids, id]
+      prompt_ids: f.prompt_ids.includes(id) ? f.prompt_ids.filter((p) => p !== id) : [...f.prompt_ids, id],
     }));
   };
 
@@ -62,13 +147,13 @@ export default function Scans() {
       const scan = await createScan({ prompt_id_list: form.prompt_ids, model_id: Number(form.model_id) });
       load();
 
-      const selectedModel = modelsList.find(m => m.id === Number(form.model_id));
+      const selectedModel = modelsList.find((m) => m.id === Number(form.model_id));
       if (!selectedModel) return;
 
-      const selectedPrompts = prompts.filter(p => form.prompt_ids.includes(p.id));
+      const selectedPrompts = prompts.filter((p) => form.prompt_ids.includes(p.id));
 
       const job = await startJob({
-        prompt_list: selectedPrompts.map(p => ({
+        prompt_list: selectedPrompts.map((p) => ({
           input_text: p.input_text,
           category: p.category,
           risk_level: p.risk_level,
@@ -96,8 +181,11 @@ export default function Scans() {
 
       streamJobResults(
         job.job_id,
-        (event) => setStreamEvents(prev => [...prev, event]),
-        () => { setStreaming(false); load(); },
+        (event) => setStreamEvents((prev) => [...prev, event]),
+        () => {
+          setStreaming(false);
+          load();
+        },
         () => setStreaming(false)
       );
     } finally {
@@ -106,64 +194,43 @@ export default function Scans() {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-start justify-between mb-7">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Zap size={16} className="text-indigo-400" />
-            <h1 className="text-xl font-semibold" style={{ color: '#e2e8f0' }}>Security Scans</h1>
-          </div>
-          <p className="text-sm" style={{ color: '#475569' }}>Initiate and manage LLM vulnerability test runs</p>
-        </div>
-        <button onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors">
-          <Plus size={14} /> New Scan
-        </button>
-      </div>
-
-      {/* Summary row */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {[
-          { label: 'Total Scans', value: scans.length, icon: Activity, color: '#6366f1' },
-          { label: 'Completed', value: scans.filter(s => s.run_status === 'completed').length, icon: CheckCircle2, color: '#10b981' },
-          { label: 'Pending', value: scans.filter(s => s.run_status === 'pending').length, icon: AlertTriangle, color: '#f59e0b' },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="rounded-xl border p-4 flex items-center gap-3" style={{ backgroundColor: '#10121c', borderColor: '#1e2236' }}>
-            <div className="p-2.5 rounded-lg" style={{ backgroundColor: `${color}20` }}>
-              <Icon size={16} style={{ color }} />
-            </div>
-            <div>
-              <p className="text-2xl font-bold" style={{ color: '#e2e8f0' }}>{value}</p>
-              <p className="text-xs" style={{ color: '#475569' }}>{label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Streaming results panel */}
+    <Page>
+      <PageHeader
+        title="Security Scans"
+        description="Run security scans against registered models and track results over time."
+      />
       {(streaming || streamEvents.length > 0) && (
-        <div className="rounded-xl border p-5 mb-6" style={{ backgroundColor: '#10121c', borderColor: '#1e2236' }}>
-          <div className="flex items-center gap-2 mb-3">
-            {streaming
-              ? <Activity size={14} className="text-indigo-400 animate-spin" />
-              : <CheckCircle2 size={14} className="text-emerald-400" />}
-            <p className="text-sm font-semibold" style={{ color: '#e2e8f0' }}>
+        <div className={`${shell} mb-6 p-5`}>
+          <div className="mb-3 flex items-center gap-2">
+            {streaming ? (
+              <Activity size={14} className="animate-spin text-accent" />
+            ) : (
+              <CheckCircle2 size={14} className="text-emerald-400" />
+            )}
+            <p className="text-sm font-semibold text-fg-strong">
               {streaming ? 'Scan running...' : 'Scan complete'}
             </p>
           </div>
           <div className="flex flex-col gap-2">
             {streamEvents.map((ev, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-lg border" style={{ borderColor: '#1e2236', backgroundColor: '#0b0d14' }}>
-                {ev.error
-                  ? <AlertTriangle size={14} className="text-red-400 mt-0.5 flex-shrink-0" />
-                  : ev.vulnerability_detected
-                    ? <ShieldAlert size={14} className="text-red-400 mt-0.5 flex-shrink-0" />
-                    : <ShieldCheck size={14} className="text-emerald-400 mt-0.5 flex-shrink-0" />}
-                <p className="text-xs" style={{ color: '#94a3b8' }}>
-                  {ev.error ?? ev.response ?? '—'}
-                </p>
+              <div
+                key={i}
+                className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-surface-raised/80 p-3"
+              >
+                {ev.error ? (
+                  <AlertTriangle size={14} className="mt-0.5 shrink-0 text-red-400" />
+                ) : ev.vulnerability_detected ? (
+                  <ShieldAlert size={14} className="mt-0.5 shrink-0 text-red-400" />
+                ) : (
+                  <ShieldCheck size={14} className="mt-0.5 shrink-0 text-emerald-400" />
+                )}
+                <p className="text-xs text-fg">{ev.error ?? ev.response ?? '—'}</p>
                 {!ev.error && (
-                  <span className={`ml-auto text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${ev.vulnerability_detected ? 'bg-red-900/50 text-red-300' : 'bg-emerald-900/50 text-emerald-300'}`}>
+                  <span
+                    className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                      ev.vulnerability_detected ? 'bg-red-900/50 text-red-300' : 'bg-emerald-900/50 text-emerald-300'
+                    }`}
+                  >
                     {ev.vulnerability_detected ? 'Vulnerable' : 'Safe'}
                   </span>
                 )}
@@ -173,62 +240,81 @@ export default function Scans() {
         </div>
       )}
 
-      {/* New Scan modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="rounded-xl border w-full max-w-lg p-6" style={{ backgroundColor: '#10121c', borderColor: '#1e2236' }}>
-            <div className="flex items-center justify-between mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className={`w-full max-w-lg ${shell} p-6`}>
+            <div className="mb-5 flex items-center justify-between">
               <div>
-                <h2 className="font-semibold" style={{ color: '#e2e8f0' }}>Initiate Security Scan</h2>
-                <p className="text-xs mt-0.5" style={{ color: '#475569' }}>Select prompts and a target model</p>
+                <h2 className="font-heading font-semibold text-fg-strong">Initiate Security Scan</h2>
+                <p className="mt-0.5 text-xs text-fg-muted">Select prompts and a target model</p>
               </div>
-              <button onClick={() => setShowForm(false)} className="p-1 rounded hover:bg-white/5">
-                <X size={16} style={{ color: '#64748b' }} />
+              <button type="button" onClick={() => setShowForm(false)} className="rounded-lg p-1.5 text-fg-muted hover:bg-white/[0.06]">
+                <X size={16} />
               </button>
             </div>
             <form onSubmit={submit} className="flex flex-col gap-4">
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>
-                  Test Prompts <span style={{ color: '#475569' }}>({form.prompt_ids.length} selected)</span>
+                <label className="mb-1.5 block text-xs font-medium text-fg-muted">
+                  Test Prompts <span className="text-fg-muted/70">({form.prompt_ids.length} selected)</span>
                 </label>
-                <div className="max-h-40 overflow-y-auto rounded-lg border" style={{ borderColor: '#1e2236', backgroundColor: '#0b0d14' }}>
-                  {prompts.map(p => (
-                    <label key={p.id} className="flex items-start gap-3 px-3 py-2 cursor-pointer hover:bg-white/5">
-                      <input type="checkbox" checked={form.prompt_ids.includes(p.id)}
+                <div className="max-h-40 overflow-y-auto rounded-xl border border-white/[0.08] bg-surface-raised">
+                  {prompts.map((p) => (
+                    <label key={p.id} className="flex cursor-pointer items-start gap-3 px-3 py-2 hover:bg-white/[0.04]">
+                      <input
+                        type="checkbox"
+                        checked={form.prompt_ids.includes(p.id)}
                         onChange={() => togglePrompt(p.id)}
-                        className="mt-0.5 accent-indigo-500 flex-shrink-0" />
-                      <span className="text-xs" style={{ color: '#94a3b8' }}>
-                        {p.input_text.slice(0, 70)}{p.input_text.length > 70 ? '…' : ''}
+                        className="mt-0.5 shrink-0 accent-[#22ffe9]"
+                      />
+                      <span className="text-xs text-fg">
+                        {p.input_text.slice(0, 70)}
+                        {p.input_text.length > 70 ? '…' : ''}
                       </span>
                     </label>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Target Model</label>
-                <select required value={form.model_id} onChange={e => setForm(f => ({ ...f, model_id: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
-                  style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}>
+                <label className="mb-1.5 block text-xs font-medium text-fg-muted">Target Model</label>
+                <select
+                  required
+                  value={form.model_id}
+                  onChange={(e) => setForm((f) => ({ ...f, model_id: e.target.value }))}
+                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none focus:border-accent/40"
+                >
                   <option value="">Select a model...</option>
-                  {modelsList.map(m => <option key={m.id} value={m.id}>{m.name} — {m.provider} ({m.access_method})</option>)}
+                  {modelsList.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} — {m.provider} ({m.access_method})
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>
-                  <span className="flex items-center gap-1"><Key size={10} /> API Key</span>
+                <label className="mb-1.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                  <Key size={10} /> API Key
                 </label>
-                <input type="password" value={form.api_key}
-                  onChange={e => setForm(f => ({ ...f, api_key: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
-                  style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}
-                  placeholder="sk-... (leave blank to use stored credential)" />
+                <input
+                  type="password"
+                  value={form.api_key}
+                  onChange={(e) => setForm((f) => ({ ...f, api_key: e.target.value }))}
+                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none focus:border-accent/40"
+                  placeholder="sk-... (leave blank to use stored credential)"
+                />
               </div>
               <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-2 rounded-lg text-sm border transition-colors"
-                  style={{ borderColor: '#1e2236', color: '#64748b' }}>Cancel</button>
-                <button type="submit" disabled={loading || form.prompt_ids.length === 0 || !form.model_id}
-                  className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="flex-1 rounded-xl border border-white/[0.1] px-4 py-2.5 text-sm text-fg-muted transition-colors hover:bg-white/[0.04]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || form.prompt_ids.length === 0 || !form.model_id}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-surface-void transition-colors hover:bg-accent/90 disabled:opacity-50"
+                >
                   {loading ? <Activity size={14} className="animate-spin" /> : <Zap size={14} />}
                   {loading ? 'Starting...' : 'Start Scan'}
                 </button>
@@ -238,95 +324,216 @@ export default function Scans() {
         </div>
       )}
 
-      {/* Scans table */}
-      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: '#10121c', borderColor: '#1e2236' }}>
-        <table className="w-full text-sm">
-          <thead>
-            <tr style={{ borderBottom: '1px solid #1e2236' }}>
-              {['', 'ID', 'Prompts', 'Model', 'Status', 'Time'].map((h, i) => (
-                <th key={i} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#475569' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {scans.length === 0 ? (
-              <tr><td colSpan={6} className="px-5 py-12 text-center" style={{ color: '#475569' }}>
-                <Zap size={28} className="mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No scans yet. Click "New Scan" to begin testing.</p>
-              </td></tr>
-            ) : scans.map(s => {
-              const m = modelsList.find(x => x.id === s.model_id);
-              const scanPrompts = prompts.filter(p => s.prompt_id_list?.includes(p.id));
-              return (
-                <Fragment key={s.id}>
-                  <tr style={{ borderBottom: expanded === s.id ? 'none' : '1px solid #1e2236' }}>
-                    <td className="px-4 py-3 w-8">
-                      <button onClick={() => expand(s.id)} className="text-slate-500 hover:text-slate-300 transition-colors">
-                        {expanded === s.id ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs" style={{ color: '#475569' }}>#{s.id}</td>
-                    <td className="px-4 py-3 text-xs" style={{ color: '#94a3b8' }}>
-                      {scanPrompts.length > 0
-                        ? `${scanPrompts.length} prompt${scanPrompts.length > 1 ? 's' : ''}`
-                        : `${s.prompt_id_list?.length ?? 0} prompt(s)`}
-                    </td>
-                    <td className="px-4 py-3 text-xs" style={{ color: '#64748b' }}>{m?.name || `#${s.model_id}`}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                        s.run_status === 'completed' ? 'bg-emerald-900/40 text-emerald-300' : s.run_status === 'failed' ? 'bg-red-900/40 text-red-300': 'bg-amber-900/40 text-amber-300'
-                      }`}>
-                        {s.run_status === 'completed' ? <CheckCircle2 size={10} /> : s.run_status === 'failed' ? <AlertTriangle size={10} /> : <Activity size={10} />}
-                        {s.run_status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs" style={{ color: '#475569' }}>
-                      {s.created_at ? new Date(s.created_at).toLocaleString() : '—'}
-                    </td>
-                  </tr>
-                  {expanded === s.id && (
-                    <tr style={{ borderBottom: '1px solid #1e2236', backgroundColor: '#0d0f1a' }}>
-                      <td colSpan={6} className="px-8 py-5">
-                        <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#475569' }}>Prompts</p>
-                        <div className="flex flex-col gap-1 mb-4">
-                          {scanPrompts.map(p => (
-                            <p key={p.id} className="text-xs p-2 rounded border" style={{ color: '#94a3b8', borderColor: '#1e2236', backgroundColor: '#10121c' }}>
-                              {p.input_text}
-                            </p>
-                          ))}
-                        </div>
-                        <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#475569' }}>Results</p>
-                        {(!results[s.id] || results[s.id].length === 0) ? (
-                          <p className="text-xs" style={{ color: '#475569' }}>No results recorded yet.</p>
-                        ) : (
-                          <div className="flex flex-col gap-2">
-                            {results[s.id].map(r => (
-                              <div key={r.id} className="flex items-start gap-3 p-3 rounded-lg border" style={{ borderColor: '#1e2236', backgroundColor: '#10121c' }}>
-                                <div className="mt-0.5 flex-shrink-0">
-                                  {r.vulnerability_detected
-                                    ? <ShieldAlert size={16} className="text-red-400" />
-                                    : <ShieldCheck size={16} className="text-emerald-400" />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm" style={{ color: '#e2e8f0' }}>{r.output_text || '—'}</p>
-                                  {r.notes && <p className="text-xs mt-1" style={{ color: '#64748b' }}>{r.notes}</p>}
-                                </div>
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${r.vulnerability_detected ? 'bg-red-900/50 text-red-300' : 'bg-emerald-900/50 text-emerald-300'}`}>
-                                  {r.vulnerability_detected ? 'Vulnerable' : 'Safe'}
-                                </span>
-                              </div>
-                            ))}
+      <div className={`overflow-hidden ${shell}`}>
+        <div className="flex flex-col gap-4 border-b border-white/[0.06] bg-surface-raised/30 px-5 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-6">
+          <h2 className="font-heading text-base font-semibold text-fg-strong">Recent Operations</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
+            >
+              <Plus size={14} strokeWidth={2.5} />
+              New Scan
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterOpen((o) => !o)}
+              className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+                filterOpen || filterQuery
+                  ? 'border-accent/40 bg-accent/10 text-accent'
+                  : 'border-white/[0.12] text-fg-muted hover:bg-white/[0.04] hover:text-fg-strong'
+              }`}
+            >
+              <Filter size={14} />
+              Filter
+            </button>
+            <button
+              type="button"
+              onClick={exportCsv}
+              disabled={filteredScans.length === 0}
+              className="flex items-center gap-1.5 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-fg-muted transition-colors hover:bg-white/[0.04] hover:text-fg-strong disabled:opacity-40"
+            >
+              <Download size={14} />
+              Export CSV
+            </button>
+          </div>
+        </div>
+
+        {filterOpen && (
+          <div className="border-b border-white/[0.06] bg-black/20 px-5 py-3 lg:px-6">
+            <input
+              type="search"
+              value={filterQuery}
+              onChange={(e) => setFilterQuery(e.target.value)}
+              placeholder="Filter by operation ID or target model..."
+              className="w-full max-w-md rounded-lg border border-white/[0.1] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/35"
+            />
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[860px] text-sm">
+            <thead>
+              <tr className="border-b border-white/[0.06] bg-black/25">
+                {['', 'Operation ID', 'Target asset', 'Status', 'Risk score', 'Execution time', 'Actions'].map((h, i) => (
+                  <th
+                    key={i}
+                    className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-fg-muted lg:px-5"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredScans.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-16 text-center text-fg-muted">
+                    <Zap size={28} className="mx-auto mb-3 text-accent/30" />
+                    <p className="text-sm">
+                      {scans.length === 0
+                        ? 'No scans yet. Use New Scan to begin testing.'
+                        : 'No operations match this filter. Clear the filter or try different keywords.'}
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredScans.map((s) => {
+                  const m = modelsList.find((x) => x.id === s.model_id);
+                  const scanPrompts = prompts.filter((p) => s.prompt_id_list?.includes(p.id));
+                  const score = riskScoreFromResults(results[s.id]);
+                  const pill = statusPill(s.run_status);
+                  const barColor =
+                    score == null ? 'bg-white/[0.08]' : score >= 70 ? 'bg-red-500/80' : score >= 40 ? 'bg-amber-500/80' : 'bg-emerald-500/70';
+
+                  return (
+                    <Fragment key={s.id}>
+                      <tr className="border-b border-white/[0.05] transition-colors hover:bg-white/[0.02]">
+                        <td className="w-10 px-2 py-3 lg:px-3">
+                          <button
+                            type="button"
+                            onClick={() => expand(s.id)}
+                            className="rounded p-1 text-fg-muted transition-colors hover:bg-white/[0.06] hover:text-fg-strong"
+                            aria-expanded={expanded === s.id}
+                          >
+                            {expanded === s.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          </button>
+                        </td>
+                        <td className="px-3 py-3 lg:px-5">
+                          <p className="font-mono text-sm font-medium text-accent">SCN-{s.id}</p>
+                          <p className="mt-0.5 text-[11px] text-fg-muted">
+                            {s.created_at ? new Date(s.created_at).toLocaleString() : '—'}
+                          </p>
+                        </td>
+                        <td className="max-w-[220px] px-3 py-3 text-xs text-fg lg:px-5">
+                          <span className="truncate font-medium" title={m?.name}>
+                            {m?.name || `model-${s.model_id}`}
+                          </span>
+                          {m?.provider && <p className="mt-0.5 text-[11px] text-fg-muted">{m.provider}</p>}
+                        </td>
+                        <td className="px-3 py-3 lg:px-5">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide ${pill.className}`}>
+                            {s.run_status === 'completed' && <CheckCircle2 size={11} />}
+                            {s.run_status === 'pending' && <Activity size={11} className="animate-pulse" />}
+                            {pill.label}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 lg:px-5">
+                          <div className="flex max-w-[140px] items-center gap-2">
+                            <span className="w-10 shrink-0 text-right text-xs tabular-nums text-fg-muted">
+                              {score != null ? `${score}/100` : '—'}
+                            </span>
+                            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/40 ring-1 ring-white/[0.06]">
+                              <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: score != null ? `${score}%` : '0%' }} />
+                            </div>
                           </div>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
+                          {score == null && results[s.id]?.length === 0 && expanded === s.id && (
+                            <p className="mt-1 text-[10px] text-fg-muted">No result rows yet</p>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 text-xs text-fg-muted lg:px-5">
+                          {s.run_status === 'pending' ? 'Running…' : formatRelativeTime(s.created_at)}
+                        </td>
+                        <td className="px-3 py-3 text-fg-muted lg:px-5" />
+                      </tr>
+                      {expanded === s.id && (
+                        <tr className="border-b border-white/[0.06] bg-surface-raised/50">
+                          <td colSpan={7} className="px-6 py-5 lg:px-8">
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-fg-muted">Prompts</p>
+                            <div className="mb-4 flex flex-col gap-1">
+                              {scanPrompts.map((p) => (
+                                <p
+                                  key={p.id}
+                                  className="rounded-lg border border-white/[0.06] bg-surface-panel p-2 text-xs text-fg"
+                                >
+                                  {p.input_text}
+                                </p>
+                              ))}
+                            </div>
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-fg-muted">Results</p>
+                            {!results[s.id] || results[s.id].length === 0 ? (
+                              <p className="text-xs text-fg-muted">No results recorded yet.</p>
+                            ) : (
+                              <div className="flex flex-col gap-2">
+                                {results[s.id].map((r) => (
+                                  <div
+                                    key={r.id}
+                                    className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-surface-panel p-3"
+                                  >
+                                    <div className="mt-0.5 shrink-0">
+                                      {r.vulnerability_detected ? (
+                                        <ShieldAlert size={16} className="text-red-400" />
+                                      ) : (
+                                        <ShieldCheck size={16} className="text-emerald-400" />
+                                      )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-sm text-fg-strong">{r.output_text || '—'}</p>
+                                      {r.notes && <p className="mt-1 text-xs text-fg-muted">{r.notes}</p>}
+                                    </div>
+                                    <span
+                                      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                        r.vulnerability_detected ? 'bg-red-900/50 text-red-300' : 'bg-emerald-900/50 text-emerald-300'
+                                      }`}
+                                    >
+                                      {r.vulnerability_detected ? 'Vulnerable' : 'Safe'}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex flex-col gap-3 border-t border-white/[0.06] bg-black/20 px-5 py-3 text-xs text-fg-muted sm:flex-row sm:items-center sm:justify-between lg:px-6">
+          <p>
+            Showing{' '}
+            {filteredScans.length === 0 ? '0' : `1–${filteredScans.length}`} of {scans.length} scan operations
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              disabled
+              className="rounded border border-white/[0.08] px-2.5 py-1 text-fg-muted opacity-40"
+            >
+              Previous
+            </button>
+            <span className="rounded border border-accent/30 bg-accent/10 px-2.5 py-1 font-medium text-accent">1</span>
+            <button type="button" disabled className="rounded border border-white/[0.08] px-2.5 py-1 text-fg-muted opacity-40">
+              Next
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </Page>
   );
 }

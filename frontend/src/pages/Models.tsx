@@ -2,9 +2,13 @@ import { useEffect, useState } from 'react';
 import { getModels, createModel, deleteModel } from '../api';
 import type { Model } from '../api';
 import { Plus, Trash2, Cpu, X, Key, Globe } from 'lucide-react';
+import { Page, PageHeader } from '../ui/page';
+import { SURFACE_CARD } from '../ui/surfaces';
 
 const ACCESS_METHODS = ['API', 'Local', 'HuggingFace', 'Browser'];
 const MODEL_TYPES = ['LLM', 'Embedding', 'Multimodal', 'Vision'];
+
+const cardShell = SURFACE_CARD;
 
 const PROVIDER_COLORS: Record<string, { bg: string; text: string }> = {
   OpenAI: { bg: '#064e3b', text: '#6ee7b7' },
@@ -43,102 +47,143 @@ export default function Models() {
   const providerStyle = (provider: string) => PROVIDER_COLORS[provider] || { bg: '#1e2236', text: '#94a3b8' };
 
   return (
-    <div className="p-8">
-      <div className="flex items-start justify-between mb-7">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Cpu size={16} className="text-indigo-400" />
-            <h1 className="text-xl font-semibold" style={{ color: '#e2e8f0' }}>Model Registry</h1>
-          </div>
-          <p className="text-sm" style={{ color: '#475569' }}>LLM models registered for security vulnerability testing</p>
-        </div>
-        <button onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors">
-          <Plus size={14} /> Register Model
-        </button>
-      </div>
+    <Page>
+      <PageHeader
+        title="Model Registry"
+        description="LLM models registered for security vulnerability testing."
+        actions={
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
+          >
+            <Plus size={14} strokeWidth={2.5} />
+            Register Model
+          </button>
+        }
+      />
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="rounded-xl border w-full max-w-md p-6" style={{ backgroundColor: '#10121c', borderColor: '#1e2236' }}>
-            <div className="flex items-center justify-between mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className={`w-full max-w-md ${cardShell} p-6`}>
+            <div className="mb-5 flex items-center justify-between">
               <div>
-                <h2 className="font-semibold" style={{ color: '#e2e8f0' }}>Register Model</h2>
-                <p className="text-xs mt-0.5" style={{ color: '#475569' }}>Add a new LLM to the testing registry</p>
+                <h2 className="font-heading font-semibold text-fg-strong">Register Model</h2>
+                <p className="mt-0.5 text-xs text-fg-muted">Add a new model to the testing registry</p>
               </div>
-              <button onClick={() => setShowForm(false)} className="p-1 rounded hover:bg-white/5">
-                <X size={16} style={{ color: '#64748b' }} />
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="rounded-lg p-1.5 text-fg-muted hover:bg-white/[0.06]"
+              >
+                <X size={16} />
               </button>
             </div>
             <form onSubmit={submit} className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Model Name</label>
-                  <input type="text" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
-                    style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}
-                    placeholder="e.g. gpt-4o" />
+                  <label className="mb-1.5 block text-xs font-medium text-fg-muted">Model Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                    placeholder="e.g. gpt-4o"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Provider</label>
-                  <input type="text" required value={form.provider} onChange={e => setForm(f => ({ ...f, provider: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
-                    style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}
-                    placeholder="e.g. OpenAI" />
+                  <label className="mb-1.5 block text-xs font-medium text-fg-muted">Provider</label>
+                  <input
+                    type="text"
+                    required
+                    value={form.provider}
+                    onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
+                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                    placeholder="e.g. OpenAI"
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Model Type</label>
-                  <select value={form.model_type} onChange={e => setForm(f => ({ ...f, model_type: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
-                    style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}>
-                    {MODEL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  <label className="mb-1.5 block text-xs font-medium text-fg-muted">Model Type</label>
+                  <select
+                    value={form.model_type}
+                    onChange={(e) => setForm((f) => ({ ...f, model_type: e.target.value }))}
+                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none focus:border-accent/40"
+                  >
+                    {MODEL_TYPES.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Access Method</label>
-                  <select value={form.access_method} onChange={e => setForm(f => ({ ...f, access_method: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
-                    style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}>
-                    {ACCESS_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+                  <label className="mb-1.5 block text-xs font-medium text-fg-muted">Access Method</label>
+                  <select
+                    value={form.access_method}
+                    onChange={(e) => setForm((f) => ({ ...f, access_method: e.target.value }))}
+                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none focus:border-accent/40"
+                  >
+                    {ACCESS_METHODS.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Credential Reference</label>
-                <input type="text" value={form.credential_reference} onChange={e => setForm(f => ({ ...f, credential_reference: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
-                  style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}
-                  placeholder="e.g. openai-api-key (secret name)" />
-                <p className="text-xs mt-1" style={{ color: '#475569' }}>Reference to the credential in secrets manager</p>
+                <label className="mb-1.5 block text-xs font-medium text-fg-muted">Credential Reference</label>
+                <input
+                  type="text"
+                  value={form.credential_reference}
+                  onChange={(e) => setForm((f) => ({ ...f, credential_reference: e.target.value }))}
+                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                  placeholder="e.g. openai-api-key (secret name)"
+                />
+                <p className="mt-1 text-xs text-fg-muted">Reference to the credential in secrets manager</p>
               </div>
               {form.access_method === 'Browser' && (
                 <>
                   <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Access URL</label>
-                    <input type="text" value={form.access_url} onChange={e => setForm(f => ({ ...f, access_url: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
-                      style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}
-                      placeholder="e.g. https://chat.openai.com" />
+                    <label className="mb-1.5 block text-xs font-medium text-fg-muted">Access URL</label>
+                    <input
+                      type="text"
+                      value={form.access_url}
+                      onChange={(e) => setForm((f) => ({ ...f, access_url: e.target.value }))}
+                      className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                      placeholder="e.g. https://chat.openai.com"
+                    />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: '#94a3b8' }}>Input Field Selector</label>
-                    <input type="text" value={form.browser_textbox} onChange={e => setForm(f => ({ ...f, browser_textbox: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
-                      style={{ backgroundColor: '#0b0d14', borderColor: '#1e2236', color: '#e2e8f0' }}
-                      placeholder="e.g. #prompt-textarea (CSS selector)" />
-                    <p className="text-xs mt-1" style={{ color: '#475569' }}>CSS selector for the chat input box</p>
+                    <label className="mb-1.5 block text-xs font-medium text-fg-muted">Input Field Selector</label>
+                    <input
+                      type="text"
+                      value={form.browser_textbox}
+                      onChange={(e) => setForm((f) => ({ ...f, browser_textbox: e.target.value }))}
+                      className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                      placeholder="e.g. #prompt-textarea (CSS selector)"
+                    />
+                    <p className="mt-1 text-xs text-fg-muted">CSS selector for the chat input box</p>
                   </div>
                 </>
               )}
               <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-2 rounded-lg text-sm border"
-                  style={{ borderColor: '#1e2236', color: '#64748b' }}>Cancel</button>
-                <button type="submit" disabled={loading}
-                  className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50">
-                  {loading ? 'Saving...' : 'Register'}
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="flex-1 rounded-xl border border-white/[0.1] px-4 py-2.5 text-sm text-fg-muted transition-colors hover:bg-white/[0.04]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-surface-void transition-colors hover:bg-accent/90 disabled:opacity-50"
+                >
+                  {loading ? 'Saving…' : 'Register'}
                 </button>
               </div>
             </form>
@@ -148,47 +193,52 @@ export default function Models() {
 
       {/* Model cards */}
       {models.length === 0 ? (
-        <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: '#10121c', borderColor: '#1e2236' }}>
-          <Cpu size={32} className="mx-auto mb-3 opacity-20" style={{ color: '#94a3b8' }} />
-          <p className="text-sm" style={{ color: '#475569' }}>No models registered yet.</p>
+        <div className={`${cardShell} px-6 py-14 text-center`}>
+          <Cpu size={28} className="mx-auto mb-3 text-fg-muted/40" />
+          <p className="text-sm text-fg-muted">No models registered yet.</p>
         </div>
       ) : (
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-          {models.map(m => {
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {models.map((m) => {
             const ps = providerStyle(m.provider);
             return (
-              <div key={m.id} className="rounded-xl border p-5 group relative" style={{ backgroundColor: '#10121c', borderColor: '#1e2236' }}>
-                <button onClick={() => remove(m.id)}
-                  className="absolute top-4 right-4 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-900/30 text-red-400">
+              <div key={m.id} className={`${cardShell} group relative px-6 py-6`}>
+                <button
+                  type="button"
+                  onClick={() => remove(m.id)}
+                  className="absolute right-4 top-4 rounded-lg p-1.5 text-red-400/90 opacity-0 transition-opacity hover:bg-red-900/30 group-hover:opacity-100"
+                >
                   <Trash2 size={13} />
                 </button>
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: ps.bg }}>
+                <div className="mb-4 flex items-start gap-3">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: ps.bg }}>
                     <Cpu size={16} style={{ color: ps.text }} />
                   </div>
-                  <div>
-                    <p className="font-semibold" style={{ color: '#e2e8f0' }}>{m.name}</p>
-                    <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium" style={{ backgroundColor: ps.bg, color: ps.text }}>{m.provider}</span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-fg-strong">{m.name}</p>
+                    <span className="mt-1 inline-flex rounded px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: ps.bg, color: ps.text }}>
+                      {m.provider}
+                    </span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: '#475569' }}>Type</span>
-                    <span className="px-2 py-0.5 rounded bg-indigo-900/40 text-indigo-300">{m.model_type}</span>
+                <div className="flex flex-col gap-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-fg-muted">Type</span>
+                    <span className="rounded bg-white/[0.06] px-2 py-0.5 font-medium text-fg-strong/90">{m.model_type}</span>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: '#475569' }}>Access</span>
-                    <div className="flex items-center gap-1.5">
-                      {m.access_method === 'API' ? <Globe size={10} className="text-blue-400" /> : <Cpu size={10} className="text-purple-400" />}
-                      <span style={{ color: '#94a3b8' }}>{m.access_method}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-fg-muted">Access</span>
+                    <div className="flex items-center gap-1.5 text-fg-strong/90">
+                      {m.access_method === 'API' ? <Globe size={10} className="text-accent/80" /> : <Cpu size={10} className="text-fg-muted/80" />}
+                      <span>{m.access_method}</span>
                     </div>
                   </div>
                   {m.credential_reference && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span style={{ color: '#475569' }}>Credential</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-fg-muted">Credential</span>
                       <div className="flex items-center gap-1.5">
-                        <Key size={10} className="text-amber-400" />
-                        <span className="font-mono" style={{ color: '#94a3b8' }}>{m.credential_reference}</span>
+                        <Key size={10} className="text-amber-400/90" />
+                        <span className="font-mono text-fg-muted">{m.credential_reference}</span>
                       </div>
                     </div>
                   )}
@@ -198,6 +248,6 @@ export default function Models() {
           })}
         </div>
       )}
-    </div>
+    </Page>
   );
 }
