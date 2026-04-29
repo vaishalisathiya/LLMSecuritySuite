@@ -4,7 +4,7 @@ const api = axios.create({ baseURL: '/api' });
 const llmApi = axios.create({ baseURL: '/llm-service' });
 
 export interface User { id: number; name: string; email: string; }
-export interface Model { id: number; name: string; provider: string; model_type: string; access_method: string; credential_reference: string | null; access_url: string | null; browser_textbox: string | null; }
+export interface Model { id: number; name: string; provider: string; model_type: string; model_identifier: string; access_method: string; credential_reference: string | null; access_url: string | null; browser_textbox: string | null; }
 export interface Prompt { id: number; input_text: string; category: string; risk_level: string; created_by: number | null; acceptance_criteria: string | null; }
 export interface TestRun { id: number; prompt_id_list: number[]; model_id: number; run_status: string; created_at: string | null; }
 export interface Result { id: number; test_run_id: number; prompt_id: number | null; output_text: string | null; vulnerability_detected: boolean; notes: string | null; severity: string | null; confidence: number | null; acceptance_criteria: string | null; }
@@ -29,12 +29,12 @@ export interface LLMJobPrompt {
   risk_level: string;
   created_by: number;
   acceptance_criteria: string;
-  prompt_id?: number;
 }
 export interface LLMJobModel {
   name: string;
   provider: string;
   model_type: string;
+  model_identifier: string;
   access_method: string;
   acceptance_criteria: string;
   credential_reference: string | null;
@@ -42,7 +42,7 @@ export interface LLMJobModel {
   browser_textbox: string | null;
   login_info: [];
 }
-export interface StartJobRequest { prompt_list: LLMJobPrompt[]; model: LLMJobModel; scan_id?: number; }
+export interface StartJobRequest { prompt_list: LLMJobPrompt[]; model: LLMJobModel; }
 export interface StartJobResponse { job_id: string; }
 export interface StreamEvent { vulnerability_detected?: boolean; response?: string; error?: string; }
 
