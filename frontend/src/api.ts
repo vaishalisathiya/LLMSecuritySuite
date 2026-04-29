@@ -29,6 +29,7 @@ export interface LLMJobPrompt {
   risk_level: string;
   created_by: number;
   acceptance_criteria: string;
+  prompt_id?: number;
 }
 export interface LLMJobModel {
   name: string;
@@ -41,7 +42,7 @@ export interface LLMJobModel {
   browser_textbox: string | null;
   login_info: [];
 }
-export interface StartJobRequest { prompt_list: LLMJobPrompt[]; model: LLMJobModel; }
+export interface StartJobRequest { prompt_list: LLMJobPrompt[]; model: LLMJobModel; scan_id?: number; }
 export interface StartJobResponse { job_id: string; }
 export interface StreamEvent { vulnerability_detected?: boolean; response?: string; error?: string; }
 

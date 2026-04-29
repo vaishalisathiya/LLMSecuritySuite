@@ -120,6 +120,16 @@ def get_scan(scan_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Scan not found")
     return suite
 
+@router.patch("/{scan_id}/status", response_model=schemas.TestSuiteOut)
+def update_scan_status(scan_id: int, status: str, db: Session = Depends(get_db)):
+    suite = db.query(models.TestSuite).filter(models.TestSuite.id == scan_id).first()
+    if not suite:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    suite.run_status = status
+    db.commit()
+    db.refresh(suite)
+    return suite
+
 
 # --- Result routes ---
 

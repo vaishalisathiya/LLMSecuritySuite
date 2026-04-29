@@ -18,8 +18,9 @@ class UserOut(BaseModel):
 
 class LoginInfo(BaseModel):
     location: str
-    credential_reference: str
-
+    action: str  # input, click
+    credential_reference: Optional[str] = None
+    follow_up: Optional[str] = None  # enter, click, etc.
 
 class LLMModelCreate(BaseModel):
     name: str
@@ -146,13 +147,13 @@ class LLMPrompt(BaseModel):
     risk_level: str
     created_by: int
     acceptance_criteria: str
+    prompt_id: Optional[int] = None
 
 class LLMModel(BaseModel):
     name: str
     provider: str
     model_type: str
     access_method: str
-    acceptance_criteria: str
     access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
@@ -161,12 +162,14 @@ class LLMModel(BaseModel):
 class LLMPromptRequest(BaseModel):
     prompt: LLMPrompt
     model: LLMModel
-    
-class LLMInteractRequest(BaseModel):
-    prompt_list: List[LLMPrompt]
-    model: LLMModel
+    scan_id: Optional[int] = None
 
 class LLMPromptResponse(BaseModel):
     response: str
     provider: str
     model: str
+
+class LLMInteractRequest(BaseModel):
+    prompt_list: List[LLMPrompt]
+    model: LLMModel
+    scan_id: Optional[int] = None
