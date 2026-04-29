@@ -3,53 +3,15 @@ from typing import Optional
 from pydantic import BaseModel, field_validator
 from typing import List
 
-# --- Tenant ---
-
-class TenantCreate(BaseModel):
-    name: str
-
-class TenantOut(BaseModel):
-    id: int
-    name: str
-
-    class Config:
-        from_attributes = True
-
-
 # --- User ---
-
-class UserCreate(BaseModel):
-    name: str
-    email: str
-    role: str = "viewer"
 
 class UserOut(BaseModel):
     id: int
-    tenant_id: int
     name: str
     email: str
-    role: str
 
     class Config:
         from_attributes = True
-
-
-# --- Signup ---
-
-class SignupRequest(BaseModel):
-    name: str
-    email: str
-    role: str = "viewer"
-    # Provide either tenant_id (join existing) or tenant_name (create new)
-    tenant_id: Optional[int] = None
-    tenant_name: Optional[str] = None
-
-class SignupOut(BaseModel):
-    user_id: int
-    tenant_id: int
-    name: str
-    email: str
-    role: str
 
 
 # --- Model + Access ---
