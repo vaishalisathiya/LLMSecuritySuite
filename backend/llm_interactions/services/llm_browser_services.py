@@ -5,12 +5,17 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException, WebDriverException, NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from fastapi import HTTPException
 import time
 import random
 from typing import Optional, List
 from pydantic import BaseModel
 from schemas import LLMPromptRequest, LLMPromptResponse
+import os
+
+SELENIUM_URL = os.getenv("SELENIUM_URL", "http://localhost:4444/wd/hub")
 
 TRAILING_NOISE_MARKERS = [
     "Gemini is AI and can make mistakes",
@@ -208,21 +213,28 @@ def wait_for_response_after_prompt(driver, container_selector, prompt_text, time
 
 def run_prompt(request: LLMPromptRequest) -> str:
     options = Options()
-    # options.add_argument("--headless=new")
-    options.add_argument(r"--profile-directory=Default")
+    options.add_argument("--headless=new")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-infobars")
     options.add_argument("--disable-extensions")
     options.add_argument("--lang=en-US")
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36")
     options.add_argument("--window-size=1920,1080")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("useAutomationExtension", False)
+    options.add_argument("--disable-gpu")               #no GPU in containers
+    options.add_argument("--disable-setuid-sandbox")    #companion to --no-sandbox
+    options.add_argument("--remote-debugging-port=9222") #useful for debugging, can remove in prod
+    options.add_argument("--disable-background-networking")  #reduces noise/unnecessary requests
+    options.add_argument("--disable-default-apps")
+    options.add_argument("--disable-sync")              #no Google account to sync with
+    options.add_argument("--metrics-recording-only")
+    options.add_argument("--mute-audio")
 
     try:
-        driver = webdriver.Chrome(options=options)
+        driver = webdriver.Remote(
+            command_executor=SELENIUM_URL,
+            options=options
+        )
     except WebDriverException as e:
         raise HTTPException(status_code=500, detail=f"Failed to start Chrome driver: {e}")
 
