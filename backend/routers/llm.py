@@ -1,8 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import httpx
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-from schemas import LLMPromptRequest, LLMPromptResponse
+import schemas
 
 router = APIRouter(prefix="/llm", tags=["llm"])
 
@@ -62,64 +60,15 @@ _PROVIDERS = {
 }
 
 
-async def _call_generic(prompt: str, model: str | None, api_key: str, endpoint: str | None) -> str:
-    if not endpoint:
-        raise HTTPException(status_code=400, detail="Generic provider requires an endpoint")
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        payload_chat = {
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}]
-        }
-        resp = await client.post(endpoint, headers=headers, json=payload_chat)
-        if resp.is_success:
-            data = resp.json()
-            return (
-                data.get("choices", [{}])[0].get("message", {}).get("content")
-                or data.get("response")
-                or str(data)
-            )
-
-        payload_prompt = {
-            "model": model,
-            "prompt": prompt
-        }
-        resp = await client.post(endpoint, headers=headers, json=payload_prompt)
-        if resp.is_success:
-            data = resp.json()
-            return data.get("text") or data.get("response") or str(data)
-
+@router.post("/interact", response_model=schemas.LLMInteractResponse)
+async def interact(body: schemas.LLMInteractRequest):
+    """Send a prompt to an LLM via API key and return the raw response."""
+    provider_key = body.provider.lower()
+    handler = _PROVIDERS.get(provider_key)
+    if not handler:
         raise HTTPException(
-            status_code=502,
-            detail=f"Generic provider failed. Last response: {resp.text}"
+            status_code=400,
+            detail=f"Unsupported provider '{body.provider}'. Supported: {list(_PROVIDERS.keys())}",
         )
-
-
-async def run_api_llm(body: LLMPromptRequest) -> LLMPromptResponse:
-    provider_key = body.model.provider.lower()
-    handler = _PROVIDERS.get(provider_key, _call_generic)
-
-    if handler == _call_generic:
-        result = await handler(
-            body.prompt.input_text,
-            body.model.model_identifier,
-            body.model.credential_reference,
-            body.model.access_url
-        )
-    else:
-        result = await handler(
-            body.prompt.input_text,
-            body.model.model_identifier,
-            body.model.credential_reference
-        )
-
-    return LLMPromptResponse(
-    response=result,
-    provider=body.model.provider,
-    model=body.model.model_identifier
-)
+    response_text = await handler(body.prompt, body.model, body.api_key)
+    return schemas.LLMInteractResponse(response=response_text, provider=body.provider, model=body.model)

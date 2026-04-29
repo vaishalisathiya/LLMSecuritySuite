@@ -32,6 +32,7 @@ class LLMModel(Base):
     name = Column(Text, nullable=False)
     provider = Column(Text, nullable=False)
     model_type = Column(Text, nullable=False)
+    model_identifier = Column(Text, nullable=False)
     interface_type = Column(Text, nullable=False)
     access_method = Column(Text, nullable=False)
     credential_reference = Column(Text, nullable=True)

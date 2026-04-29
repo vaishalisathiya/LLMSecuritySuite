@@ -3,29 +3,67 @@ from typing import Optional
 from pydantic import BaseModel, field_validator
 from typing import List
 
-# --- User ---
+# --- Tenant ---
 
-class UserOut(BaseModel):
+class TenantCreate(BaseModel):
+    name: str
+
+class TenantOut(BaseModel):
     id: int
     name: str
-    email: str
 
     class Config:
         from_attributes = True
+
+
+# --- User ---
+
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    role: str = "viewer"
+
+class UserOut(BaseModel):
+    id: int
+    tenant_id: int
+    name: str
+    email: str
+    role: str
+
+    class Config:
+        from_attributes = True
+
+
+# --- Signup ---
+
+class SignupRequest(BaseModel):
+    name: str
+    email: str
+    role: str = "viewer"
+    # Provide either tenant_id (join existing) or tenant_name (create new)
+    tenant_id: Optional[int] = None
+    tenant_name: Optional[str] = None
+
+class SignupOut(BaseModel):
+    user_id: int
+    tenant_id: int
+    name: str
+    email: str
+    role: str
 
 
 # --- Model + Access ---
 
 class LoginInfo(BaseModel):
     location: str
-    action: str  # input, click
-    credential_reference: Optional[str] = None
-    follow_up: Optional[str] = None  # enter, click, etc.
+    credential_reference: str
+
 
 class LLMModelCreate(BaseModel):
     name: str
     provider: str
     model_type: str
+    model_identifier: str
     access_method: str
     access_url: Optional[str] = None #if browser based, where to look to enter data
     browser_textbox: Optional[str] = None
@@ -37,6 +75,7 @@ class LLMModelOut(BaseModel):
     name: str
     provider: str
     model_type: str
+    model_identifier: str
     access_method: str
     access_url: Optional[str] = None #if browser based, where to look to enter data
     browser_textbox: Optional[str] = None
@@ -147,13 +186,14 @@ class LLMPrompt(BaseModel):
     risk_level: str
     created_by: int
     acceptance_criteria: str
-    prompt_id: Optional[int] = None
 
 class LLMModel(BaseModel):
     name: str
     provider: str
     model_type: str
+    model_identifier: str
     access_method: str
+    acceptance_criteria: str
     access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
@@ -162,14 +202,12 @@ class LLMModel(BaseModel):
 class LLMPromptRequest(BaseModel):
     prompt: LLMPrompt
     model: LLMModel
-    scan_id: Optional[int] = None
+    
+class LLMInteractRequest(BaseModel):
+    prompt_list: List[LLMPrompt]
+    model: LLMModel
 
 class LLMPromptResponse(BaseModel):
     response: str
     provider: str
     model: str
-
-class LLMInteractRequest(BaseModel):
-    prompt_list: List[LLMPrompt]
-    model: LLMModel
-    scan_id: Optional[int] = None
