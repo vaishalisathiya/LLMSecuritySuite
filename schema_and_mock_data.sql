@@ -22,6 +22,7 @@ CREATE TABLE models (
     model_type TEXT NOT NULL,
     interface_type TEXT NOT NULL,  -- 'api' or 'browser'
     access_method TEXT NOT NULL,
+    model_identifier TEXT NOT NULL,
     credential_reference TEXT,     -- Secrets Manager ARN/key name
     access_url TEXT,               -- URL for browser-based models
     browser_textbox TEXT,          -- CSS selector/ID for input field

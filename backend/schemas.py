@@ -29,6 +29,7 @@ class LLMModelCreate(BaseModel):
     model_type: str
     interface_type: str
     access_method: str
+    model_identifier: str
     access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
@@ -41,6 +42,7 @@ class LLMModelOut(BaseModel):
     model_type: str
     interface_type: str
     access_method: str
+    model_identifier: str
     access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
