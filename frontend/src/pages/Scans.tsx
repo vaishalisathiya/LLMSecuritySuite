@@ -325,7 +325,7 @@ export default function Scans() {
       )}
 
       <div className={`overflow-hidden ${shell}`}>
-        <div className="flex flex-col gap-4 border-b border-white/[0.06] bg-surface-raised/30 px-5 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-6">
+        <div className="flex flex-col gap-4 border-b border-white/[0.06] bg-surface-raised/30 px-6 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <h2 className="font-heading text-base font-semibold text-fg-strong">Recent Operations</h2>
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -361,7 +361,7 @@ export default function Scans() {
         </div>
 
         {filterOpen && (
-          <div className="border-b border-white/[0.06] bg-black/20 px-5 py-3 lg:px-6">
+          <div className="border-b border-white/[0.06] bg-black/20 px-6 py-3 lg:px-8">
             <input
               type="search"
               value={filterQuery}
@@ -379,7 +379,7 @@ export default function Scans() {
                 {['', 'Operation ID', 'Target asset', 'Status', 'Risk score', 'Execution time', 'Actions'].map((h, i) => (
                   <th
                     key={i}
-                    className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-fg-muted lg:px-5"
+                    className="px-6 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-fg-muted lg:px-7"
                   >
                     {h}
                   </th>
@@ -410,7 +410,7 @@ export default function Scans() {
                   return (
                     <Fragment key={s.id}>
                       <tr className="border-b border-white/[0.05] transition-colors hover:bg-white/[0.02]">
-                        <td className="w-10 px-2 py-3 lg:px-3">
+                        <td className="w-10 px-3 py-3 lg:px-4">
                           <button
                             type="button"
                             onClick={() => expand(s.id)}
@@ -420,26 +420,26 @@ export default function Scans() {
                             {expanded === s.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                           </button>
                         </td>
-                        <td className="px-3 py-3 lg:px-5">
+                        <td className="px-5 py-3 lg:px-7">
                           <p className="font-mono text-sm font-medium text-accent">SCN-{s.id}</p>
                           <p className="mt-0.5 text-[11px] text-fg-muted">
                             {s.created_at ? new Date(s.created_at).toLocaleString() : '—'}
                           </p>
                         </td>
-                        <td className="max-w-[220px] px-3 py-3 text-xs text-fg lg:px-5">
+                        <td className="max-w-[220px] px-5 py-3 text-xs text-fg lg:px-7">
                           <span className="truncate font-medium" title={m?.name}>
                             {m?.name || `model-${s.model_id}`}
                           </span>
                           {m?.provider && <p className="mt-0.5 text-[11px] text-fg-muted">{m.provider}</p>}
                         </td>
-                        <td className="px-3 py-3 lg:px-5">
+                        <td className="px-5 py-3 lg:px-7">
                           <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide ${pill.className}`}>
                             {s.run_status === 'completed' && <CheckCircle2 size={11} />}
                             {s.run_status === 'pending' && <Activity size={11} className="animate-pulse" />}
                             {pill.label}
                           </span>
                         </td>
-                        <td className="px-3 py-3 lg:px-5">
+                        <td className="px-5 py-3 lg:px-7">
                           <div className="flex max-w-[140px] items-center gap-2">
                             <span className="w-10 shrink-0 text-right text-xs tabular-nums text-fg-muted">
                               {score != null ? `${score}/100` : '—'}
@@ -452,14 +452,14 @@ export default function Scans() {
                             <p className="mt-1 text-[10px] text-fg-muted">No result rows yet</p>
                           )}
                         </td>
-                        <td className="px-3 py-3 text-xs text-fg-muted lg:px-5">
+                        <td className="px-5 py-3 text-xs text-fg-muted lg:px-7">
                           {s.run_status === 'pending' ? 'Running…' : formatRelativeTime(s.created_at)}
                         </td>
-                        <td className="px-3 py-3 text-fg-muted lg:px-5" />
+                        <td className="px-5 py-3 text-fg-muted lg:px-7" />
                       </tr>
                       {expanded === s.id && (
                         <tr className="border-b border-white/[0.06] bg-surface-raised/50">
-                          <td colSpan={7} className="px-6 py-5 lg:px-8">
+                          <td colSpan={7} className="px-7 py-5 lg:px-9">
                             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-fg-muted">Prompts</p>
                             <div className="mb-4 flex flex-col gap-1">
                               {scanPrompts.map((p) => (
@@ -514,7 +514,7 @@ export default function Scans() {
           </table>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/[0.06] bg-black/20 px-5 py-3 text-xs text-fg-muted sm:flex-row sm:items-center sm:justify-between lg:px-6">
+        <div className="flex flex-col gap-3 border-t border-white/[0.06] bg-black/20 px-6 py-3 text-xs text-fg-muted sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <p>
             Showing{' '}
             {filteredScans.length === 0 ? '0' : `1–${filteredScans.length}`} of {scans.length} scan operations

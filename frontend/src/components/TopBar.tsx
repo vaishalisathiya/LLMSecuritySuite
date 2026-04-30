@@ -46,7 +46,7 @@ export default function TopBar() {
   }
 
   return (
-    <header className="flex min-h-[88px] shrink-0 flex-col gap-6 border-b border-white/[0.06] bg-surface-base px-6 py-7 lg:min-h-[96px] lg:flex-row lg:items-center lg:gap-10 lg:px-10 lg:py-8 xl:gap-12">
+    <header className="flex min-h-[88px] shrink-0 flex-col gap-6 border-b border-white/[0.06] bg-surface-base py-7 lg:min-h-[96px] lg:flex-row lg:items-center lg:gap-10 lg:py-8 xl:gap-12" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
       {/* Page title — fixed width band so search can expand */}
       <h1 className="shrink-0 font-heading text-2xl font-semibold leading-tight tracking-tight text-fg-strong lg:text-[30px] lg:leading-snug">
         {title}

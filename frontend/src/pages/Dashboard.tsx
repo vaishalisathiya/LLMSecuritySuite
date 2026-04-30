@@ -5,6 +5,7 @@ import { getStatsOverview, getScans, getPrompts, getModels } from '../api';
 import type { Prompt, Model } from '../api';
 import { ShieldAlert, ShieldCheck, Zap, CheckCircle2 } from 'lucide-react';
 import { SURFACE_CARD } from '../ui/surfaces';
+import { Page } from '../ui/page';
 
 const cardShell = SURFACE_CARD;
 
@@ -50,7 +51,7 @@ function StatCard({
   iconMuted?: boolean;
 }) {
   return (
-    <div className={`${cardShell} flex min-h-[118px] flex-col justify-center p-6`}>
+    <div className={`${cardShell} flex min-h-[118px] flex-col justify-center`} style={{ padding: '24px 12px' }}>
       <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted/70">
         {label}
       </p>
@@ -75,7 +76,7 @@ function AttackCategoryPanel({ byCategory }: { byCategory: { category: string; c
   const max = Math.max(...CATEGORY_AXIS.map((k) => countBy[k] ?? 0), 1);
 
   return (
-    <div className={`${cardShell} flex min-h-[340px] flex-col p-7`}>
+    <div className={`${cardShell} flex min-h-[340px] flex-col px-8 py-7`}>
       <p className="text-sm font-semibold uppercase tracking-wide text-fg-strong/90">
         Scans by Attack Category
       </p>
@@ -114,7 +115,7 @@ function RiskPanel({ byRisk }: { byRisk: { risk_level: string; count: number }[]
   const lowPct = total > 0 ? Math.round((low / total) * 100) : 0;
 
   return (
-    <div className={`${cardShell} p-7`}>
+    <div className={`${cardShell} px-8 py-7`}>
       <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70">
         Risk Level Distribution
       </p>
@@ -146,7 +147,7 @@ function RiskPanel({ byRisk }: { byRisk: { risk_level: string; count: number }[]
 
 function CoveragePanel({ models, prompts, completed }: { models: number; prompts: number; completed: number }) {
   return (
-    <div className={`${cardShell} border-l-[3px] border-l-accent p-7`}>
+    <div className={`${cardShell} border-l-[3px] border-l-accent px-8 py-7`}>
       <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70">
         Test Coverage
       </p>
@@ -187,7 +188,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-[1280px] px-6 pb-16 pt-11 sm:px-8 lg:px-10">
+    <Page>
       <div className="flex flex-col gap-10">
         {/* KPI row */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
@@ -218,14 +219,14 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto px-7 pb-8 pt-5">
+          <div className="overflow-x-auto pb-8 pt-5">
             <table className="w-full min-w-[860px] text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06] bg-black/20">
                   {['Scan ID', 'Prompt', 'Category', 'Risk', 'Model', 'Status', 'Time'].map((h) => (
                     <th
                       key={h}
-                      className={`px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted/70 ${
+                      className={`px-7 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted/70 ${
                         h === 'Time' ? 'text-right' : ''
                       }`}
                     >
@@ -256,13 +257,13 @@ export default function Dashboard() {
 
                     return (
                       <tr key={s.id} className="border-b border-white/[0.05] hover:bg-white/[0.02]">
-                        <td className="align-middle px-5 py-3.5 text-xs font-medium text-accent">#SCN-{s.id}</td>
+                        <td className="align-middle px-7 py-3.5 text-xs font-medium text-accent">#SCN-{s.id}</td>
                         <td className="max-w-[320px] align-middle px-5 py-3.5">
                           <p className="truncate text-xs text-fg" title={p?.input_text}>
                             {p?.input_text || (firstPid != null ? `Prompt #${firstPid}` : '—')}
                           </p>
                         </td>
-                        <td className="align-middle px-5 py-3.5">
+                        <td className="align-middle px-7 py-3.5">
                           {p && (
                             <span
                               className="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]"
@@ -272,7 +273,7 @@ export default function Dashboard() {
                             </span>
                           )}
                         </td>
-                        <td className="align-middle px-5 py-3.5">
+                        <td className="align-middle px-7 py-3.5">
                           {p && (
                             <div className="flex items-center gap-2">
                               <div className="h-2 w-2 rounded-full" style={{ backgroundColor: riskDot }} />
@@ -280,14 +281,14 @@ export default function Dashboard() {
                             </div>
                           )}
                         </td>
-                        <td className="align-middle px-5 py-3.5 text-xs text-fg-muted">{m?.name || `Model #${s.model_id}`}</td>
-                        <td className="align-middle px-5 py-3.5">
+                        <td className="align-middle px-7 py-3.5 text-xs text-fg-muted">{m?.name || `Model #${s.model_id}`}</td>
+                        <td className="align-middle px-7 py-3.5">
                           <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent">
                             <CheckCircle2 size={12} />
                             completed
                           </span>
                         </td>
-                        <td className="align-middle px-5 py-3.5 text-right text-xs leading-none text-fg-muted tabular-nums">
+                        <td className="align-middle px-7 py-3.5 text-right text-xs leading-none text-fg-muted tabular-nums">
                           {formatRelativeTime(s.created_at)}
                         </td>
                       </tr>
@@ -299,6 +300,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </Page>
   );
 }

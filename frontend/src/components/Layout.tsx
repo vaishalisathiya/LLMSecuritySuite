@@ -79,15 +79,15 @@ export default function Layout() {
         </div>
 
         {/* Nav — pushed down from brand; tall rows; clear vertical separation */}
-        <nav className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-8 pt-14">
+        <nav className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-8" style={{ paddingLeft: '10px', paddingRight: '8px', paddingTop: '10px' }}>
           {nav.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/'}
-              style={{ fontSize: Math.max(11, 16 * fontScale) }}
+              style={{ fontSize: Math.max(11, 16 * fontScale), paddingLeft: '8px', paddingRight: '8px' }}
               className={({ isActive }) =>
-                `relative flex items-center gap-4 rounded-xl py-5 pl-4 pr-4 font-medium leading-snug transition-colors ${
+                `relative flex items-center gap-4 rounded-xl py-5 font-medium leading-snug transition-colors ${
                   isActive
                     ? 'text-accent before:pointer-events-none before:absolute before:right-0 before:top-3 before:bottom-3 before:block before:w-0.5 before:rounded-full before:bg-accent'
                     : 'text-fg-muted hover:bg-white/[0.04] hover:text-fg-strong'
@@ -109,7 +109,7 @@ export default function Layout() {
         </nav>
 
         {/* New Scan — anchored bottom with clear separation from nav */}
-        <div className="mt-auto border-t border-white/[0.04] px-5 pb-9 pt-8">
+        <div className="mt-auto border-t border-white/[0.04] pb-9 pt-8" style={{ paddingLeft: '20px', paddingRight: '16px' }}>
           <NavLink
             to="/scans?new=1"
             style={{ fontSize: Math.max(11, 16 * fontScale) }}
