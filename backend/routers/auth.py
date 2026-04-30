@@ -1,11 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
+import bcrypt
 from database import get_db
 import models, schemas
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def _hash(password: str) -> str:
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+
+def _verify(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode(), hashed.encode())
 
 
 @router.post("/register", response_model=schemas.AuthOut)
@@ -19,7 +26,7 @@ def register(data: schemas.RegisterIn, db: Session = Depends(get_db)):
         name=data.name,
         username=data.username,
         email=data.email,
-        password_hash=pwd_context.hash(data.password),
+        password_hash=_hash(data.password),
         role="viewer",
     )
     db.add(user)
@@ -31,6 +38,6 @@ def register(data: schemas.RegisterIn, db: Session = Depends(get_db)):
 @router.post("/login", response_model=schemas.AuthOut)
 def login(data: schemas.LoginIn, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.username == data.username).first()
-    if not user or not user.password_hash or not pwd_context.verify(data.password, user.password_hash):
+    if not user or not user.password_hash or not _verify(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     return user
