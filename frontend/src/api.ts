@@ -4,6 +4,7 @@ const api = axios.create({ baseURL: '/api' });
 const llmApi = axios.create({ baseURL: '/llm-service' });
 
 export interface User { id: number; name: string; email: string; }
+export interface AuthUser { id: number; name: string; username: string | null; email: string; role: string; }
 export interface Model { id: number; name: string; provider: string; model_type: string; access_method: string; credential_reference: string | null; access_url: string | null; browser_textbox: string | null; }
 export interface Prompt { id: number; input_text: string; category: string; risk_level: string; created_by: number | null; acceptance_criteria: string | null; }
 export interface TestRun { id: number; prompt_id_list: number[]; model_id: number; run_status: string; created_at: string | null; }
@@ -45,6 +46,12 @@ export interface LLMJobModel {
 export interface StartJobRequest { prompt_list: LLMJobPrompt[]; model: LLMJobModel; scan_id?: number; }
 export interface StartJobResponse { job_id: string; }
 export interface StreamEvent { vulnerability_detected?: boolean; response?: string; error?: string; }
+
+// --- Auth ---
+export const registerUser = (data: { name: string; username: string; email: string; password: string }) =>
+  api.post<AuthUser>('/auth/register', data).then(r => r.data);
+export const loginUser = (data: { username: string; password: string }) =>
+  api.post<AuthUser>('/auth/login', data).then(r => r.data);
 
 // --- CRUD ---
 export const getUsers = () => api.get<User[]>('/users/').then(r => r.data);

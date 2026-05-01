@@ -10,7 +10,9 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     tenant_id INT NOT NULL REFERENCES tenants(id),
     name TEXT NOT NULL,
+    username TEXT UNIQUE,
     email TEXT UNIQUE NOT NULL,
+    password_hash TEXT,
     role TEXT NOT NULL DEFAULT 'viewer'  -- 'admin', 'developer', 'viewer'
 );
 

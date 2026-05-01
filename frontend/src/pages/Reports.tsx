@@ -118,7 +118,7 @@ export default function Reports() {
       />
 
       <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-        <div className={`${cardShell} flex h-[112px] flex-col justify-center px-6 py-4`}>
+        <div className={`${cardShell} flex h-[112px] flex-col justify-center px-8 py-4`}>
           <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted/70">
             Total Findings
           </p>
@@ -129,7 +129,7 @@ export default function Reports() {
             <FileBarChart2 size={14} className="text-fg-muted/80" />
           </div>
         </div>
-        <div className={`${cardShell} flex h-[112px] flex-col justify-center px-6 py-4`}>
+        <div className={`${cardShell} flex h-[112px] flex-col justify-center px-8 py-4`}>
           <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted/70">
             Vulnerabilities
           </p>
@@ -140,7 +140,7 @@ export default function Reports() {
             <ShieldAlert size={14} className="text-red-400/80" />
           </div>
         </div>
-        <div className={`${cardShell} flex h-[112px] flex-col justify-center px-6 py-4`}>
+        <div className={`${cardShell} flex h-[112px] flex-col justify-center px-8 py-4`}>
           <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted/70">
             Safe Results
           </p>

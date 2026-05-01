@@ -232,7 +232,7 @@ export default function Prompts() {
               {['#', 'Prompt', 'Category', 'Risk', 'Author'].map((h) => (
                 <th
                   key={h}
-                  className="px-4 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted/70"
+                  className="px-6 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted/70"
                 >
                   {h}
                 </th>
@@ -252,13 +252,13 @@ export default function Prompts() {
               const cfg = CAT_CONFIG[p.category];
               return (
                 <tr key={p.id} className="border-b border-white/[0.05] hover:bg-white/[0.02]">
-                  <td className="align-middle px-4 py-2.5 font-mono text-xs text-fg-muted">{p.id}</td>
+                  <td className="align-middle px-6 py-2.5 font-mono text-xs text-fg-muted">{p.id}</td>
                   <td className="max-w-[520px] align-middle px-4 py-2.5">
                     <p className="truncate text-xs text-fg" title={p.input_text}>
                       {p.input_text}
                     </p>
                   </td>
-                  <td className="align-middle px-4 py-2.5">
+                  <td className="align-middle px-6 py-2.5">
                     {cfg && (
                       <span
                         className="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]"
@@ -268,7 +268,7 @@ export default function Prompts() {
                       </span>
                     )}
                   </td>
-                  <td className="align-middle px-4 py-2.5">
+                  <td className="align-middle px-6 py-2.5">
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
                         p.risk_level === 'high'
@@ -281,7 +281,7 @@ export default function Prompts() {
                       {p.risk_level}
                     </span>
                   </td>
-                  <td className="align-middle px-4 py-2.5 text-xs text-fg-muted">
+                  <td className="align-middle px-6 py-2.5 text-xs text-fg-muted">
                     {users.find((u) => u.id === p.created_by)?.name || `User ${p.created_by}`}
                   </td>
                 </tr>
