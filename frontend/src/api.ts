@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: '/api' });
+const api = axios.create({ baseURL: '/api', headers: { 'X-Tenant-ID': '1' } });
 const llmApi = axios.create({ baseURL: '/llm-service' });
 
 export interface User { id: number; name: string; email: string; }
 export interface AuthUser { id: number; name: string; username: string | null; email: string; role: string; }
-export interface Model { id: number; name: string; provider: string; model_type: string; interface_type: string; access_method: string; credential_reference: string | null; access_url: string | null; browser_textbox: string | null; }
+export interface Model { id: number; name: string; provider: string; model_type: string; interface_type: string; access_method: string; model_identifier: string; credential_reference: string | null; access_url: string | null; browser_textbox: string | null; }
 export interface Prompt { id: number; input_text: string; category: string; risk_level: string; created_by: number | null; acceptance_criteria: string | null; }
 export interface TestRun { id: number; prompt_id_list: number[]; model_id: number; run_status: string; created_at: string | null; }
 export interface Result { id: number; test_run_id: number; prompt_id: number | null; output_text: string | null; vulnerability_detected: boolean; notes: string | null; severity: string | null; confidence: number | null; acceptance_criteria: string | null; }

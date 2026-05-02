@@ -15,11 +15,8 @@ def list_models(db: Session = Depends(get_db)):
 
 @router.post("/", response_model=schemas.LLMModelOut, status_code=201)
 def create_model(body: schemas.LLMModelCreate, db: Session = Depends(get_db)):
-    # Derive interface_type from access_method
-    interface_type = "browser" if body.access_method.lower() == "browser" else "api"
     llm_model = models.LLMModel(
         tenant_id=DEFAULT_TENANT_ID,
-        interface_type=interface_type,
         **body.model_dump(),
     )
     db.add(llm_model)

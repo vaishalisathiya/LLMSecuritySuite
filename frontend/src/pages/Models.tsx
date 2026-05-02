@@ -21,7 +21,7 @@ const PROVIDER_COLORS: Record<string, { bg: string; text: string }> = {
 export default function Models() {
   const [models, setModels] = useState<Model[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', provider: '', model_type: 'LLM', interface_type: 'api', access_method: 'API', credential_reference: '', access_url: '', browser_textbox: '' });
+  const [form, setForm] = useState({ name: '', provider: '', model_type: 'LLM', interface_type: 'api', access_method: 'API', model_identifier: '', credential_reference: '', access_url: '', browser_textbox: '' });
   const [loading, setLoading] = useState(false);
 
   const load = () => getModels().then(setModels);
@@ -32,7 +32,7 @@ export default function Models() {
     setLoading(true);
     try {
       await createModel({ ...form, credential_reference: form.credential_reference || null, access_url: form.access_url || null, browser_textbox: form.browser_textbox || null });
-      setForm({ name: '', provider: '', model_type: 'LLM', interface_type: 'api', access_method: 'API', credential_reference: '', access_url: '', browser_textbox: '' });
+      setForm({ name: '', provider: '', model_type: 'LLM', interface_type: 'api', access_method: 'API', model_identifier: '', credential_reference: '', access_url: '', browser_textbox: '' });
       setShowForm(false);
       load();
     } finally { setLoading(false); }
@@ -133,6 +133,18 @@ export default function Models() {
                     ))}
                   </select>
                 </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-fg-muted">Model Identifier</label>
+                <input
+                  type="text"
+                  required
+                  value={form.model_identifier}
+                  onChange={(e) => setForm((f) => ({ ...f, model_identifier: e.target.value }))}
+                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                  placeholder="e.g. gpt-4o, claude-3-5-sonnet-latest"
+                />
+                <p className="mt-1 text-xs text-fg-muted">The model ID used in API calls</p>
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-fg-muted">Credential Reference</label>
