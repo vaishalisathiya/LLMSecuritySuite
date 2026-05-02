@@ -82,10 +82,10 @@ INSERT INTO users (tenant_id, name, email, role) VALUES
 (1, 'Vaishali Sathiyachalam', 'vaishali@test.com', 'developer'),
 (1, 'Earl De Luna Vasquez', 'earl@test.com', 'developer');
 
-INSERT INTO models (tenant_id, name, provider, model_type, interface_type, access_method, credential_reference) VALUES
-(1, 'gpt-4', 'OpenAI', 'LLM', 'api', 'API', 'openai-api-key'),
-(1, 'claude', 'Anthropic', 'LLM', 'api', 'API', 'anthropic-api-key'),
-(1, 'chatgpt-web', 'OpenAI', 'LLM', 'browser', 'Browser', NULL);
+INSERT INTO models (tenant_id, name, provider, model_type, interface_type, access_method, model_identifier, credential_reference) VALUES
+(1, 'gpt-4', 'OpenAI', 'LLM', 'api', 'API', 'gpt-4', 'openai-api-key'),
+(1, 'claude', 'Anthropic', 'LLM', 'api', 'API', 'claude-3-5-sonnet-20241022', 'anthropic-api-key'),
+(1, 'chatgpt-web', 'OpenAI', 'LLM', 'browser', 'Browser', 'chatgpt-web', NULL);
 
 INSERT INTO prompts
     (tenant_id, input_text, category, risk_level, created_by)
