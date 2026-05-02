@@ -4,7 +4,7 @@ celery_app = Celery(
     "app",
     broker="redis://localhost:6379/0",
     backend="redis://localhost:6379/0",
-    include=["app.tasks"]
+    include=["llm_interactions.celery.tasks"]
 )
 
 celery_app.conf.update(
@@ -12,5 +12,3 @@ celery_app.conf.update(
     accept_content=["json"],
     result_serializer="json",
 )
-
-import app.tasks

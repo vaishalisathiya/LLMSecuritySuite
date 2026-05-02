@@ -3,12 +3,14 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+backend/.venv/
+backend/venv/
 
 # Frontend
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
-"frontend/package-lock 2.json"
+frontend/package-lock 2.json
 
 # Misc
 .DS_Store

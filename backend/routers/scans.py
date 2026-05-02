@@ -60,7 +60,6 @@ def stats_overview(
     completed = suites_q.filter(models.TestSuite.run_status == "completed").count()
     pending = suites_q.filter(models.TestSuite.run_status == "pending").count()
 
-    # Results scoped via test suites that belong to this tenant
     suite_ids = [s.id for s in suites_q.all()]
     results_q = db.query(models.Result).filter(models.Result.test_run_id.in_(suite_ids))
     total_results = results_q.count()

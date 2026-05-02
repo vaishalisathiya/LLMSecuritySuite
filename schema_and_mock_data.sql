@@ -10,7 +10,9 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     tenant_id INT NOT NULL REFERENCES tenants(id),
     name TEXT NOT NULL,
+    username TEXT UNIQUE,
     email TEXT UNIQUE NOT NULL,
+    password_hash TEXT,
     role TEXT NOT NULL DEFAULT 'viewer'  -- 'admin', 'developer', 'viewer'
 );
 
@@ -20,6 +22,7 @@ CREATE TABLE models (
     name TEXT NOT NULL,
     provider TEXT NOT NULL,
     model_type TEXT NOT NULL,
+    model_identifier TEXT NOT NULL,
     interface_type TEXT NOT NULL,  -- 'api' or 'browser'
     access_method TEXT NOT NULL,
     model_identifier TEXT NOT NULL,
@@ -83,9 +86,9 @@ INSERT INTO users (tenant_id, name, email, role) VALUES
 (1, 'Earl De Luna Vasquez', 'earl@test.com', 'developer');
 
 INSERT INTO models (tenant_id, name, provider, model_type, interface_type, access_method, model_identifier, credential_reference) VALUES
-(1, 'gpt-4', 'OpenAI', 'LLM', 'api', 'API', 'gpt-4', 'openai-api-key'),
-(1, 'claude', 'Anthropic', 'LLM', 'api', 'API', 'claude-3-5-sonnet-20241022', 'anthropic-api-key'),
-(1, 'chatgpt-web', 'OpenAI', 'LLM', 'browser', 'Browser', 'chatgpt-web', NULL);
+(1, 'gpt-4', 'OpenAI', 'LLM', 'api', 'API', 'gpt-4o', 'openai-api-key'),
+(1, 'claude', 'Anthropic', 'LLM', 'api', 'API', 'claude-3-5-sonnet-latest', 'anthropic-api-key'),
+(1, 'chatgpt-web', 'OpenAI', 'LLM', 'browser', 'Browser', 'chatgpt', NULL);
 
 INSERT INTO prompts
     (tenant_id, input_text, category, risk_level, created_by)

@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { getModels, createModel, deleteModel } from '../api';
 import type { Model } from '../api';
 import { Plus, Trash2, Cpu, X, Key, Globe } from 'lucide-react';
+import { Page, PageHeader } from '../ui/page';
+import { SURFACE_CARD } from '../ui/surfaces';
 
 const ACCESS_METHODS = ['API', 'Local', 'HuggingFace', 'Browser'];
 const MODEL_TYPES = ['LLM', 'Embedding', 'Multimodal', 'Vision'];
 
-const cardShell =
-  'rounded-xl border border-white/[0.08] bg-surface-panel shadow-[0_18px_48px_-28px_rgba(0,0,0,0.85),0_1px_0_0_rgba(255,255,255,0.03)]';
+const cardShell = SURFACE_CARD;
 
 const PROVIDER_COLORS: Record<string, { bg: string; text: string }> = {
   OpenAI: { bg: '#064e3b', text: '#6ee7b7' },
@@ -46,23 +47,21 @@ export default function Models() {
   const providerStyle = (provider: string) => PROVIDER_COLORS[provider] || { bg: '#1e2236', text: '#94a3b8' };
 
   return (
-    <div className="mx-auto max-w-[1440px] px-6 pb-14 pt-10 lg:px-10">
-      <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-fg-strong/90">Model Registry</p>
-          <p className="mt-1 max-w-xl text-sm text-fg-muted">
-            LLM models registered for security vulnerability testing.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
-        >
-          <Plus size={14} strokeWidth={2.5} />
-          Register Model
-        </button>
-      </div>
+    <Page>
+      <PageHeader
+        title="Model Registry"
+        description="LLM models registered for security vulnerability testing."
+        actions={
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
+          >
+            <Plus size={14} strokeWidth={2.5} />
+            Register Model
+          </button>
+        }
+      />
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -249,6 +248,6 @@ export default function Models() {
           })}
         </div>
       )}
-    </div>
+    </Page>
   );
 }

@@ -14,14 +14,36 @@ class UserOut(BaseModel):
         from_attributes = True
 
 
+class RegisterIn(BaseModel):
+    name: str
+    username: str
+    email: str
+    password: str
+
+
+class LoginIn(BaseModel):
+    username: str
+    password: str
+
+
+class AuthOut(BaseModel):
+    id: int
+    name: str
+    username: Optional[str]
+    email: str
+    role: str
+
+    class Config:
+        from_attributes = True
+
+
 # --- Model + Access ---
 
 class LoginInfo(BaseModel):
     location: str
-    action: str
+    action: str  # input, click
     credential_reference: Optional[str] = None
-    follow_up: Optional[str] = None
-
+    follow_up: Optional[str] = None  # enter, click, etc.
 
 class LLMModelCreate(BaseModel):
     name: str
@@ -66,7 +88,7 @@ class PromptOut(BaseModel):
     category: str
     risk_level: str
     created_by: Optional[int]
-    acceptance_criteria: str
+    acceptance_criteria: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -93,7 +115,6 @@ class TestSuiteOut(BaseModel):
 
 class ResultCreate(BaseModel):
     prompt_id: int
-    test_run_id: int
     output_text: str
     vulnerability_detected: bool
     detection_method: Optional[str] = None
@@ -104,12 +125,12 @@ class ResultCreate(BaseModel):
 
 class ResultOut(BaseModel):
     id: int
-    prompt_id: int
     test_run_id: int
+    prompt_id: int
     output_text: str
     vulnerability_detected: bool
     notes: str
-    severity: Optional[str]
+    severity: Optional[str] = None
     confidence: float
     acceptance_criteria: str
 
@@ -170,12 +191,12 @@ class LLMPromptRequest(BaseModel):
     model: LLMModel
     scan_id: Optional[int] = None
 
-class LLMInteractRequest(BaseModel):
-    prompt_list: List[LLMPrompt]
-    model: LLMModel
-    scan_id: Optional[int] = None
-
 class LLMPromptResponse(BaseModel):
     response: str
     provider: str
     model: str
+
+class LLMInteractRequest(BaseModel):
+    prompt_list: List[LLMPrompt]
+    model: LLMModel
+    scan_id: Optional[int] = None

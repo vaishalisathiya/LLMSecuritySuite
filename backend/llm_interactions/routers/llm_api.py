@@ -1,6 +1,10 @@
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+
 from fastapi import APIRouter
-from services.llm_api_services import run_api_llm
-from LLMSecuritySuite.backend.schemas import LLMPromptRequest, LLMPromptResponse
+from llm_interactions.services.llm_api_services import run_api_llm
+from schemas import LLMPromptRequest, LLMPromptResponse
 
 router = APIRouter(prefix="/llm/api", tags=["llm-api"])
 
