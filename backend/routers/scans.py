@@ -178,6 +178,24 @@ def get_scan(
     return suite
 
 
+@router.patch("/{scan_id}/status", response_model=schemas.TestSuiteOut)
+def update_scan_status(
+    scan_id: int,
+    status: str,
+    tenant_id: int = Depends(get_tenant_id),
+    db: Session = Depends(get_db),
+):
+    suite = db.query(models.TestSuite).filter(
+        models.TestSuite.id == scan_id, models.TestSuite.tenant_id == tenant_id
+    ).first()
+    if not suite:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    suite.run_status = status
+    db.commit()
+    db.refresh(suite)
+    return suite
+
+
 @router.delete("/{scan_id}", status_code=204)
 def delete_scan(
     scan_id: int,
