@@ -324,142 +324,150 @@ export default function Scans() {
         </div>
       )}
 
-      <div className={`overflow-hidden ${shell}`}>
-        <div className="flex flex-col gap-4 border-b border-white/[0.06] bg-surface-raised/30 px-6 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <h2 className="font-heading text-base font-semibold text-fg-strong">Recent Operations</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowForm(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
-            >
-              <Plus size={14} strokeWidth={2.5} />
-              New Scan
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterOpen((o) => !o)}
-              className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
-                filterOpen || filterQuery
-                  ? 'border-accent/40 bg-accent/10 text-accent'
-                  : 'border-white/[0.12] text-fg-muted hover:bg-white/[0.04] hover:text-fg-strong'
-              }`}
-            >
-              <Filter size={14} />
-              Filter
-            </button>
-            <button
-              type="button"
-              onClick={exportCsv}
-              disabled={filteredScans.length === 0}
-              className="flex items-center gap-1.5 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-fg-muted transition-colors hover:bg-white/[0.04] hover:text-fg-strong disabled:opacity-40"
-            >
-              <Download size={14} />
-              Export CSV
-            </button>
+      <div className={`mt-8 min-w-0 overflow-hidden ${shell}`}>
+        <div className="p-6">
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="font-heading text-lg font-semibold leading-snug text-fg-strong">Recent Operations</h2>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowForm(true)}
+                className="inline-flex h-10 min-h-[36px] items-center gap-2 rounded-lg border-2 border-accent/50 bg-accent/15 px-3.5 py-2 text-sm font-semibold text-accent shadow-sm transition-colors hover:bg-accent/20"
+              >
+                <Plus size={16} strokeWidth={2.5} />
+                New Scan
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterOpen((o) => !o)}
+                className={`inline-flex h-10 min-h-[36px] items-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-medium transition-colors ${
+                  filterOpen || filterQuery
+                    ? 'border-accent/40 bg-accent/10 text-accent'
+                    : 'border-white/[0.14] text-fg-muted hover:bg-white/[0.05] hover:text-fg-strong'
+                }`}
+              >
+                <Filter size={16} />
+                Filter
+              </button>
+              <button
+                type="button"
+                onClick={exportCsv}
+                disabled={filteredScans.length === 0}
+                className="inline-flex h-10 min-h-[36px] items-center gap-2 rounded-lg border border-white/[0.14] px-3.5 py-2 text-sm font-medium text-fg-muted transition-colors hover:bg-white/[0.05] hover:text-fg-strong disabled:opacity-40"
+              >
+                <Download size={16} />
+                Export CSV
+              </button>
+            </div>
           </div>
-        </div>
 
-        {filterOpen && (
-          <div className="border-b border-white/[0.06] bg-black/20 px-6 py-3 lg:px-8">
-            <input
-              type="search"
-              value={filterQuery}
-              onChange={(e) => setFilterQuery(e.target.value)}
-              placeholder="Filter by operation ID or target model..."
-              className="w-full max-w-md rounded-lg border border-white/[0.1] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/35"
-            />
-          </div>
-        )}
+          {filterOpen && (
+            <div className="mb-5 rounded-xl border border-white/[0.08] bg-surface-raised/40 px-4 py-3">
+              <input
+                type="search"
+                value={filterQuery}
+                onChange={(e) => setFilterQuery(e.target.value)}
+                placeholder="Filter by operation ID or target model..."
+                className="w-full max-w-md rounded-lg border border-white/[0.1] bg-surface-panel px-3 py-2.5 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/35"
+              />
+            </div>
+          )}
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] bg-black/25">
-                {['', 'Operation ID', 'Target asset', 'Status', 'Risk score', 'Execution time', 'Actions'].map((h, i) => (
-                  <th
-                    key={i}
-                    className="px-6 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-fg-muted lg:px-7"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredScans.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-16 text-center text-fg-muted">
-                    <Zap size={28} className="mx-auto mb-3 text-accent/30" />
-                    <p className="text-sm">
-                      {scans.length === 0
-                        ? 'No scans yet. Use New Scan to begin testing.'
-                        : 'No operations match this filter. Clear the filter or try different keywords.'}
-                    </p>
-                  </td>
+          <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
+            <table className="w-full min-w-[860px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.1] bg-surface-raised/50">
+                  {['', 'Operation ID', 'Target asset', 'Status', 'Risk score', 'Execution time', 'Actions'].map((h, i) => (
+                    <th
+                      key={i}
+                      className="min-h-[48px] px-[18px] py-3.5 text-left align-middle text-sm font-medium uppercase tracking-wide text-fg-muted/90"
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ) : (
-                filteredScans.map((s) => {
-                  const m = modelsList.find((x) => x.id === s.model_id);
-                  const scanPrompts = prompts.filter((p) => s.prompt_id_list?.includes(p.id));
-                  const score = riskScoreFromResults(results[s.id]);
-                  const pill = statusPill(s.run_status);
-                  const barColor =
-                    score == null ? 'bg-white/[0.08]' : score >= 70 ? 'bg-red-500/80' : score >= 40 ? 'bg-amber-500/80' : 'bg-emerald-500/70';
+              </thead>
+              <tbody>
+                {filteredScans.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-[18px] py-16 text-center text-fg-muted">
+                      <Zap size={28} className="mx-auto mb-3 text-accent/30" />
+                      <p className="text-sm leading-relaxed">
+                        {scans.length === 0
+                          ? 'No scans yet. Use New Scan to begin testing.'
+                          : 'No operations match this filter. Clear the filter or try different keywords.'}
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredScans.map((s) => {
+                    const m = modelsList.find((x) => x.id === s.model_id);
+                    const scanPrompts = prompts.filter((p) => s.prompt_id_list?.includes(p.id));
+                    const score = riskScoreFromResults(results[s.id]);
+                    const pill = statusPill(s.run_status);
+                    const barColor =
+                      score == null ? 'bg-white/[0.08]' : score >= 70 ? 'bg-red-500/80' : score >= 40 ? 'bg-amber-500/80' : 'bg-emerald-500/70';
 
-                  return (
-                    <Fragment key={s.id}>
-                      <tr className="border-b border-white/[0.05] transition-colors hover:bg-white/[0.02]">
-                        <td className="w-10 px-3 py-3 lg:px-4">
-                          <button
-                            type="button"
-                            onClick={() => expand(s.id)}
-                            className="rounded p-1 text-fg-muted transition-colors hover:bg-white/[0.06] hover:text-fg-strong"
-                            aria-expanded={expanded === s.id}
-                          >
-                            {expanded === s.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                          </button>
-                        </td>
-                        <td className="px-5 py-3 lg:px-7">
-                          <p className="font-mono text-sm font-medium text-accent">SCN-{s.id}</p>
-                          <p className="mt-0.5 text-[11px] text-fg-muted">
-                            {s.created_at ? new Date(s.created_at).toLocaleString() : '—'}
-                          </p>
-                        </td>
-                        <td className="max-w-[220px] px-5 py-3 text-xs text-fg lg:px-7">
-                          <span className="truncate font-medium" title={m?.name}>
-                            {m?.name || `model-${s.model_id}`}
-                          </span>
-                          {m?.provider && <p className="mt-0.5 text-[11px] text-fg-muted">{m.provider}</p>}
-                        </td>
-                        <td className="px-5 py-3 lg:px-7">
-                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide ${pill.className}`}>
-                            {s.run_status === 'completed' && <CheckCircle2 size={11} />}
-                            {s.run_status === 'pending' && <Activity size={11} className="animate-pulse" />}
-                            {pill.label}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3 lg:px-7">
-                          <div className="flex max-w-[140px] items-center gap-2">
-                            <span className="w-10 shrink-0 text-right text-xs tabular-nums text-fg-muted">
-                              {score != null ? `${score}/100` : '—'}
+                    return (
+                      <Fragment key={s.id}>
+                        <tr className="min-h-[64px] border-b border-white/[0.06] transition-colors hover:bg-white/[0.03]">
+                          <td className="w-12 align-middle px-[18px] py-4">
+                            <button
+                              type="button"
+                              onClick={() => expand(s.id)}
+                              className="inline-flex rounded-lg p-2 text-fg-muted transition-colors hover:bg-white/[0.08] hover:text-fg-strong"
+                              aria-expanded={expanded === s.id}
+                            >
+                              {expanded === s.id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                            </button>
+                          </td>
+                          <td className="align-middle px-[18px] py-4">
+                            <p className="font-mono text-sm font-medium leading-snug text-accent">SCN-{s.id}</p>
+                            <p className="mt-2 text-sm leading-relaxed text-fg-muted">
+                              {s.created_at ? new Date(s.created_at).toLocaleString() : '—'}
+                            </p>
+                          </td>
+                          <td className="max-w-[240px] align-middle px-[18px] py-4 text-sm text-fg">
+                            <span className="block truncate font-medium leading-snug" title={m?.name}>
+                              {m?.name || `model-${s.model_id}`}
                             </span>
-                            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/40 ring-1 ring-white/[0.06]">
-                              <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: score != null ? `${score}%` : '0%' }} />
+                            {m?.provider && (
+                              <p className="mt-2 text-sm leading-relaxed text-fg-muted">{m.provider}</p>
+                            )}
+                          </td>
+                          <td className="align-middle px-[18px] py-4">
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold leading-snug tracking-wide ${pill.className}`}
+                            >
+                              {s.run_status === 'completed' && <CheckCircle2 size={14} className="shrink-0" />}
+                              {s.run_status === 'pending' && <Activity size={14} className="shrink-0 animate-pulse" />}
+                              {pill.label}
+                            </span>
+                          </td>
+                          <td className="align-middle px-[18px] py-4">
+                            <div className="flex min-w-[180px] max-w-[260px] flex-wrap items-center gap-3">
+                              <span className="shrink-0 text-right text-sm tabular-nums leading-relaxed text-fg-muted">
+                                {score != null ? `${score}/100` : '—'}
+                              </span>
+                              <div className="h-2 min-w-[96px] flex-1 overflow-hidden rounded-full bg-black/40 ring-1 ring-white/[0.08]">
+                                <div
+                                  className={`h-full rounded-full transition-all ${barColor}`}
+                                  style={{ width: score != null ? `${score}%` : '0%' }}
+                                />
+                              </div>
                             </div>
-                          </div>
-                          {score == null && results[s.id]?.length === 0 && expanded === s.id && (
-                            <p className="mt-1 text-[10px] text-fg-muted">No result rows yet</p>
-                          )}
-                        </td>
-                        <td className="px-5 py-3 text-xs text-fg-muted lg:px-7">
-                          {s.run_status === 'pending' ? 'Running…' : formatRelativeTime(s.created_at)}
-                        </td>
-                        <td className="px-5 py-3 text-fg-muted lg:px-7" />
-                      </tr>
-                      {expanded === s.id && (
-                        <tr className="border-b border-white/[0.06] bg-surface-raised/50">
-                          <td colSpan={7} className="px-7 py-5 lg:px-9">
+                            {score == null && results[s.id]?.length === 0 && expanded === s.id && (
+                              <p className="mt-2 text-sm leading-relaxed text-fg-muted">No result rows yet</p>
+                            )}
+                          </td>
+                          <td className="align-middle px-[18px] py-4 text-sm leading-relaxed text-fg-muted">
+                            {s.run_status === 'pending' ? 'Running…' : formatRelativeTime(s.created_at)}
+                          </td>
+                          <td className="align-middle px-[18px] py-4 text-fg-muted" />
+                        </tr>
+                        {expanded === s.id && (
+                          <tr className="border-b border-white/[0.06] bg-surface-raised/50">
+                            <td colSpan={7} className="px-[18px] py-5 lg:px-6">
                             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-fg-muted">Prompts</p>
                             <div className="mb-4 flex flex-col gap-1">
                               {scanPrompts.map((p) => (
@@ -503,34 +511,41 @@ export default function Scans() {
                                 ))}
                               </div>
                             )}
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                   );
                 })
               )}
             </tbody>
           </table>
-        </div>
+          </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/[0.06] bg-black/20 px-6 py-3 text-xs text-fg-muted sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <p>
-            Showing{' '}
-            {filteredScans.length === 0 ? '0' : `1–${filteredScans.length}`} of {scans.length} scan operations
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              disabled
-              className="rounded border border-white/[0.08] px-2.5 py-1 text-fg-muted opacity-40"
-            >
-              Previous
-            </button>
-            <span className="rounded border border-accent/30 bg-accent/10 px-2.5 py-1 font-medium text-accent">1</span>
-            <button type="button" disabled className="rounded border border-white/[0.08] px-2.5 py-1 text-fg-muted opacity-40">
-              Next
-            </button>
+          <div className="mt-6 flex flex-col gap-3 border-t border-white/[0.08] pt-5 text-sm leading-relaxed text-fg-muted sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              Showing{' '}
+              {filteredScans.length === 0 ? '0' : `1–${filteredScans.length}`} of {scans.length} scan operations
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled
+                className="rounded-lg border border-white/[0.1] px-3 py-2 text-sm text-fg-muted opacity-40"
+              >
+                Previous
+              </button>
+              <span className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-sm font-medium text-accent">
+                1
+              </span>
+              <button
+                type="button"
+                disabled
+                className="rounded-lg border border-white/[0.1] px-3 py-2 text-sm text-fg-muted opacity-40"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>

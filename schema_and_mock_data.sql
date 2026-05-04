@@ -78,10 +78,12 @@ CREATE TABLE logs (
 INSERT INTO tenants (name) VALUES
 ('Secure IVAI');
 
-INSERT INTO users (tenant_id, name, email, role) VALUES
-(1, 'Mazin Omar', 'mazin@test.com', 'admin'),
-(1, 'Vaishali Sathiyachalam', 'vaishali@test.com', 'developer'),
-(1, 'Earl De Luna Vasquez', 'earl@test.com', 'developer');
+-- Password for every seeded account below: devpass123 (bcrypt; for local lab only).
+INSERT INTO users (tenant_id, name, username, email, password_hash, role) VALUES
+(1, 'Mazin Omar', 'mazin', 'mazin@test.com', '$2b$12$45kb6bcjPar8JGstPpgGduHf2ph9UqvWtm83wyvmemTZ5zilDtFGK', 'admin'),
+(1, 'Vaishali Sathiyachalam', 'vaishali', 'vaishali@test.com', '$2b$12$45kb6bcjPar8JGstPpgGduHf2ph9UqvWtm83wyvmemTZ5zilDtFGK', 'developer'),
+(1, 'Earl De Luna Vasquez', 'earl', 'earl@test.com', '$2b$12$45kb6bcjPar8JGstPpgGduHf2ph9UqvWtm83wyvmemTZ5zilDtFGK', 'developer'),
+(1, 'Local Dev', 'dev', 'dev@localhost', '$2b$12$45kb6bcjPar8JGstPpgGduHf2ph9UqvWtm83wyvmemTZ5zilDtFGK', 'admin');
 
 INSERT INTO models (tenant_id, name, provider, model_type, interface_type, access_method, credential_reference) VALUES
 (1, 'gpt-4', 'OpenAI', 'LLM', 'api', 'API', 'openai-api-key'),

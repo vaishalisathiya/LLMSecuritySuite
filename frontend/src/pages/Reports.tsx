@@ -153,14 +153,14 @@ export default function Reports() {
         </div>
       </div>
 
-      <div className={`${cardShell} overflow-hidden`}>
-        <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.06] bg-surface-raised/30 px-6 py-3">
-          <div className="flex items-center gap-1.5 text-xs text-fg-muted">
-            <Filter size={12} className="opacity-80" />
-            <span className="font-medium">Filters</span>
+      <div className={cardShell}>
+        <div className="flex min-h-[56px] flex-wrap items-center gap-4 border-b border-white/[0.12] bg-surface-raised/50 px-6 py-4 text-sm text-fg-muted">
+          <div className="flex items-center gap-2">
+            <Filter size={14} className="shrink-0 opacity-80" />
+            <span className="font-medium text-fg-strong/90">Filters</span>
           </div>
 
-          <div className="ml-1 flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-4">
             {(['all', 'vulnerable', 'safe'] as FilterKey[]).map((f) => {
               const active = filter === f;
               return (
@@ -168,10 +168,10 @@ export default function Reports() {
                   key={f}
                   type="button"
                   onClick={() => setFilter(f)}
-                  className={`rounded-lg border px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+                  className={`rounded-lg border px-3.5 py-2 text-sm font-medium capitalize leading-snug transition-colors ${
                     active
                       ? 'border-accent/40 bg-accent/10 text-accent'
-                      : 'border-white/[0.12] text-fg-muted hover:bg-white/[0.04] hover:text-fg-strong'
+                      : 'border-white/[0.14] text-fg-muted hover:bg-white/[0.06] hover:text-fg-strong'
                   }`}
                 >
                   {f}
@@ -180,12 +180,12 @@ export default function Reports() {
             })}
           </div>
 
-          <div className="h-4 w-px bg-white/[0.08]" />
+          <div className="hidden h-6 w-px shrink-0 bg-white/[0.12] sm:block" aria-hidden />
 
           <select
             value={catFilter}
             onChange={(e) => setCatFilter(e.target.value)}
-            className="rounded-lg border border-white/[0.12] bg-surface-raised px-3 py-1.5 text-xs text-fg-muted outline-none focus:border-accent/35"
+            className="min-h-[40px] rounded-lg border border-white/[0.14] bg-surface-panel px-3.5 py-2 text-sm text-fg-muted outline-none focus:border-accent/35"
           >
             <option value="all">All categories</option>
             {categories.map((c) => (
@@ -195,7 +195,7 @@ export default function Reports() {
             ))}
           </select>
 
-          <span className="ml-auto text-xs text-fg-muted">
+          <span className="ml-auto text-sm text-fg-muted">
             {filtered.length} result{filtered.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -211,64 +211,69 @@ export default function Reports() {
             <p className="text-sm text-fg-muted">No results match the current filters.</p>
           </div>
         ) : (
-          <div className="divide-y divide-white/[0.06]">
+          <div className="flex flex-col gap-4 px-6 py-6">
             {filtered.map(({ result, scan, prompt, model }) => {
               const sev = SEV_CONFIG[result.severity || 'none'] || SEV_CONFIG.none;
               const cat = CAT_CONFIG[prompt?.category || ''] || { label: (prompt?.category || 'UNKNOWN').toUpperCase(), color: '#22ffe9' };
               const vuln = result.vulnerability_detected;
 
               return (
-                <div key={result.id} className="px-6 py-5 hover:bg-white/[0.02]">
-                  <div className="flex items-start gap-4">
-                    <div className="mt-0.5 shrink-0">
+                <div
+                  key={result.id}
+                  className="rounded-xl border border-white/[0.1] bg-surface-raised/25 px-6 py-5 hover:bg-surface-raised/35"
+                >
+                  <div className="flex items-start gap-5">
+                    <div className="flex shrink-0 pt-0.5">
                       {vuln ? (
-                        <ShieldAlert size={16} className="text-red-400" />
+                        <ShieldAlert size={18} className="text-red-400" />
                       ) : (
-                        <ShieldCheck size={16} className="text-emerald-400" />
+                        <ShieldCheck size={18} className="text-emerald-400" />
                       )}
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-medium text-accent">#SCN-{scan?.id ?? result.test_run_id}</span>
+                      <div className="flex flex-wrap items-center gap-2.5 leading-relaxed">
+                        <span className="text-sm font-medium text-accent">#SCN-{scan?.id ?? result.test_run_id}</span>
                         <span
-                          className="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]"
+                          className="inline-flex items-center rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]"
                           style={{ backgroundColor: `${cat.color}1f`, color: cat.color }}
                         >
                           {cat.label}
                         </span>
                         {prompt?.risk_level && (
-                          <span className="text-xs text-fg-muted">
+                          <span className="text-sm text-fg-muted">
                             Risk: <span className="text-fg-strong/90">{prompt.risk_level}</span>
                           </span>
                         )}
-                        <span className="text-xs text-fg-muted">
+                        <span className="text-sm text-fg-muted">
                           Model: <span className="text-fg-strong/90">{model?.name || 'Unknown'}</span>
                         </span>
                       </div>
 
                       {prompt?.input_text && (
-                        <div className="mb-2 rounded-xl border border-white/[0.06] bg-surface-raised/40 p-3">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-muted/70">
+                        <div className="mt-3 mb-3 rounded-xl border border-white/[0.08] bg-surface-panel/50 px-4 py-3.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-muted/80">
                             Prompt
                           </p>
-                          <p className="mt-1 text-xs text-fg">{prompt.input_text}</p>
+                          <p className="mt-2 text-sm leading-relaxed text-fg">{prompt.input_text}</p>
                         </div>
                       )}
 
-                      <div className="rounded-xl border border-white/[0.06] bg-surface-raised/40 p-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-muted/70">
+                      <div
+                        className={`rounded-xl border border-white/[0.08] bg-surface-panel/50 px-4 py-3.5 ${prompt?.input_text ? '' : 'mt-3'}`}
+                      >
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-muted/80">
                           Response
                         </p>
-                        <p className="mt-1 text-xs text-fg">{result.output_text || '—'}</p>
+                        <p className="mt-2 text-sm leading-relaxed text-fg">{result.output_text || '—'}</p>
                       </div>
 
-                      {result.notes && <p className="mt-2 text-xs text-fg-muted">{result.notes}</p>}
+                      {result.notes && <p className="mt-3 text-sm leading-relaxed text-fg-muted">{result.notes}</p>}
                     </div>
 
-                    <div className="shrink-0 text-right">
+                    <div className="flex shrink-0 flex-col items-end gap-2 text-right">
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold ${
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold ${
                           vuln ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/35 text-emerald-300'
                         }`}
                       >
@@ -277,18 +282,16 @@ export default function Reports() {
                       </span>
 
                       {result.severity && result.severity !== 'none' && (
-                        <div className="mt-2">
-                          <span
-                            className="inline-flex rounded-lg border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]"
-                            style={{
-                              backgroundColor: sev.bg,
-                              color: sev.text,
-                              borderColor: `${sev.border}60`,
-                            }}
-                          >
-                            {result.severity}
-                          </span>
-                        </div>
+                        <span
+                          className="inline-flex rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]"
+                          style={{
+                            backgroundColor: sev.bg,
+                            color: sev.text,
+                            borderColor: `${sev.border}60`,
+                          }}
+                        >
+                          {result.severity}
+                        </span>
                       )}
                     </div>
                   </div>

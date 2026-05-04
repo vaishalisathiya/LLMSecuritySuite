@@ -63,8 +63,9 @@ export default function Prompts() {
         }
       />
 
-      {/* Category overview cards */}
-      <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="flex min-w-0 flex-col gap-10">
+        {/* Category overview cards — own section; gap-10 on parent guarantees 40px before table (no margin collapse) */}
+        <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {CATEGORIES.map((c) => {
           const cfg = CAT_CONFIG[c];
           const Icon = cfg.icon;
@@ -98,6 +99,102 @@ export default function Prompts() {
             </button>
           );
         })}
+        </section>
+
+        {/* Prompts table — outer section; vertical space from cards comes from parent gap-10 */}
+        <section className="w-full min-w-0">
+        <div className={cardShell}>
+          <div className="px-6 pb-5 pt-8">
+            <div className="mb-4 flex items-baseline justify-between gap-4">
+              <p className="text-sm leading-relaxed text-fg-muted">
+                {catFilter !== 'all' ? `${CAT_CONFIG[catFilter]?.label} — ` : ''}
+                {filtered.length} prompt{filtered.length !== 1 ? 's' : ''}
+              </p>
+              {catFilter !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setCatFilter('all')}
+                  className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-accent hover:text-accent/90"
+                >
+                  Clear filter
+                </button>
+              )}
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border border-white/[0.1]">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.12] bg-surface-raised/55">
+                    {['#', 'Prompt', 'Category', 'Risk', 'Author'].map((h) => (
+                      <th
+                        key={h}
+                        className="min-h-[48px] px-[18px] py-3.5 text-left align-middle text-[11px] font-semibold uppercase leading-snug tracking-[0.12em] text-fg-muted/85 first:pl-[22px]"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-[18px] py-16 text-center text-sm leading-relaxed text-fg-muted">
+                        <FileText size={28} className="mx-auto mb-3 text-fg-muted/40" />
+                        No prompts yet. Add your first test prompt to get started.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((p) => {
+                      const cfg = CAT_CONFIG[p.category];
+                      return (
+                        <tr
+                          key={p.id}
+                          className="min-h-[44px] border-b border-white/[0.06] last:border-b-0 hover:bg-white/[0.03]"
+                        >
+                          <td className="align-middle px-[18px] py-3 pl-[22px] font-mono text-sm tabular-nums text-fg-muted">
+                            {p.id}
+                          </td>
+                          <td className="max-w-[520px] align-middle px-[18px] py-3">
+                            <p className="truncate text-sm leading-relaxed text-fg" title={p.input_text}>
+                              {p.input_text}
+                            </p>
+                          </td>
+                          <td className="align-middle px-[18px] py-3">
+                            {cfg && (
+                              <span
+                                className="inline-flex items-center rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]"
+                                style={{ backgroundColor: cfg.bg, color: cfg.text }}
+                              >
+                                {cfg.label}
+                              </span>
+                            )}
+                          </td>
+                          <td className="align-middle px-[18px] py-3">
+                            <span
+                              className={`inline-flex items-center rounded-full px-2 py-1 text-sm font-medium capitalize leading-snug ${
+                                p.risk_level === 'high'
+                                  ? 'bg-red-900/40 text-red-300'
+                                  : p.risk_level === 'medium'
+                                    ? 'bg-amber-900/40 text-amber-300'
+                                    : 'bg-emerald-900/35 text-emerald-300'
+                              }`}
+                            >
+                              {p.risk_level}
+                            </span>
+                          </td>
+                          <td className="align-middle px-[18px] py-3 text-sm leading-relaxed text-fg-muted">
+                            {users.find((u) => u.id === p.created_by)?.name || `User ${p.created_by}`}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        </section>
       </div>
 
       {showForm && (
@@ -208,89 +305,6 @@ export default function Prompts() {
           </div>
         </div>
       )}
-
-      {/* Prompt table */}
-      <div className={`${cardShell} overflow-hidden`}>
-        <div className="flex items-baseline justify-between border-b border-white/[0.04] px-6 py-3">
-          <p className="text-xs text-fg-muted">
-            {catFilter !== 'all' ? `${CAT_CONFIG[catFilter]?.label} — ` : ''}
-            {filtered.length} prompt{filtered.length !== 1 ? 's' : ''}
-          </p>
-          {catFilter !== 'all' && (
-            <button
-              type="button"
-              onClick={() => setCatFilter('all')}
-              className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent hover:text-accent/90"
-            >
-              Clear filter
-            </button>
-          )}
-        </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-white/[0.06] bg-black/20">
-              {['#', 'Prompt', 'Category', 'Risk', 'Author'].map((h) => (
-                <th
-                  key={h}
-                  className="px-6 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted/70"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-16 text-center text-sm text-fg-muted">
-                  <FileText size={28} className="mx-auto mb-3 text-fg-muted/40" />
-                  No prompts yet. Add your first test prompt to get started.
-                </td>
-              </tr>
-            ) : (
-              filtered.map((p) => {
-              const cfg = CAT_CONFIG[p.category];
-              return (
-                <tr key={p.id} className="border-b border-white/[0.05] hover:bg-white/[0.02]">
-                  <td className="align-middle px-6 py-2.5 font-mono text-xs text-fg-muted">{p.id}</td>
-                  <td className="max-w-[520px] align-middle px-4 py-2.5">
-                    <p className="truncate text-xs text-fg" title={p.input_text}>
-                      {p.input_text}
-                    </p>
-                  </td>
-                  <td className="align-middle px-6 py-2.5">
-                    {cfg && (
-                      <span
-                        className="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]"
-                        style={{ backgroundColor: cfg.bg, color: cfg.text }}
-                      >
-                        {cfg.label}
-                      </span>
-                    )}
-                  </td>
-                  <td className="align-middle px-6 py-2.5">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
-                        p.risk_level === 'high'
-                          ? 'bg-red-900/40 text-red-300'
-                          : p.risk_level === 'medium'
-                            ? 'bg-amber-900/40 text-amber-300'
-                            : 'bg-emerald-900/35 text-emerald-300'
-                      }`}
-                    >
-                      {p.risk_level}
-                    </span>
-                  </td>
-                  <td className="align-middle px-6 py-2.5 text-xs text-fg-muted">
-                    {users.find((u) => u.id === p.created_by)?.name || `User ${p.created_by}`}
-                  </td>
-                </tr>
-              );
-            })
-            )}
-          </tbody>
-        </table>
-      </div>
     </Page>
   );
 }
