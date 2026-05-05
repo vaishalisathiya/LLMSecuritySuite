@@ -188,27 +188,27 @@ function RiskPanel({ byRisk }: { byRisk: { risk_level: string; count: number }[]
 
   return (
     <div className={`${cardShell} px-8 py-7`}>
-      <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70">
+      <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70" style={{ paddingLeft: '0.5rem' }}>
         Risk Level Distribution
       </p>
 
       <div className="flex flex-col">
         <div style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem' }}>
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-strong/90">High Risk</p>
-            <p className="text-[12px] font-medium text-accent">{high}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-strong/90" style={{ paddingLeft: '0.5rem' }}>High Risk</p>
+            <p className="text-[12px] font-medium text-accent" style={{ paddingRight: '0.5rem' }}>{high}</p>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-accent/15">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-accent/15" style={{ marginLeft: '0.5rem', marginRight: '0.5rem', width: 'calc(100% - 1rem)' }}>
             <div className="h-full rounded-full bg-accent" style={{ width: `${highPct}%` }} />
           </div>
         </div>
 
         <div style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem' }}>
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-strong/90">Low Risk</p>
-            <p className="text-[12px] font-medium text-fg-muted/90">{low}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-strong/90" style={{ paddingLeft: '0.5rem' }}>Low Risk</p>
+            <p className="text-[12px] font-medium text-fg-muted/90" style={{ paddingRight: '0.5rem' }}>{low}</p>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.08]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.08]" style={{ marginLeft: '0.5rem', marginRight: '0.5rem', width: 'calc(100% - 1rem)' }}>
             <div className="h-full rounded-full bg-white/[0.22]" style={{ width: `${lowPct}%` }} />
           </div>
         </div>
@@ -220,22 +220,22 @@ function RiskPanel({ byRisk }: { byRisk: { risk_level: string; count: number }[]
 function CoveragePanel({ models, prompts, completed }: { models: number; prompts: number; completed: number }) {
   return (
     <div className={`${cardShell} px-8 py-7`}>
-      <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70">
+      <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/70" style={{ paddingLeft: '0.5rem' }}>
         Test Coverage
       </p>
 
       <div className="flex flex-col text-[13px]">
         <div className="flex items-center justify-between" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem' }}>
-          <p className="font-medium text-fg-strong/90">Models Tested</p>
-          <p className="font-medium text-accent">{models}</p>
+          <p className="font-medium text-fg-strong/90" style={{ paddingLeft: '0.5rem' }}>Models Tested</p>
+          <p className="font-medium text-accent" style={{ paddingRight: '0.5rem' }}>{models}</p>
         </div>
         <div className="flex items-center justify-between" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem' }}>
-          <p className="font-medium text-fg-strong/90">Prompt Library</p>
-          <p className="font-medium text-accent">{prompts}</p>
+          <p className="font-medium text-fg-strong/90" style={{ paddingLeft: '0.5rem' }}>Prompt Library</p>
+          <p className="font-medium text-accent" style={{ paddingRight: '0.5rem' }}>{prompts}</p>
         </div>
         <div className="flex items-center justify-between" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem' }}>
-          <p className="font-medium text-fg-strong/90">Completed Runs</p>
-          <p className="font-medium text-accent">{completed}</p>
+          <p className="font-medium text-fg-strong/90" style={{ paddingLeft: '0.5rem' }}>Completed Runs</p>
+          <p className="font-medium text-accent" style={{ paddingRight: '0.5rem' }}>{completed}</p>
         </div>
       </div>
     </div>
