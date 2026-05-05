@@ -102,22 +102,17 @@ export default function Reports() {
 
   return (
     <Page>
-      <PageHeader
-        title="Reports"
-        description="Review scan evaluation findings — filter, triage, and export."
-        actions={
-          <button
-            type="button"
-            onClick={exportJSON}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-surface-raised px-3 py-2 text-xs font-medium text-fg-muted transition-colors hover:bg-white/[0.04] hover:text-fg-strong"
-          >
-            <Download size={14} />
-            Export JSON
-          </button>
-        }
-      />
-
-      <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="relative" style={{ marginBottom: '32px' }}>
+        <button
+          type="button"
+          onClick={exportJSON}
+          className="absolute right-0 inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-surface-raised px-3 py-2 text-xs font-medium text-fg-muted transition-colors hover:bg-white/[0.04] hover:text-fg-strong"
+          style={{ bottom: 'calc(100% + 8px)' }}
+        >
+          <Download size={14} />
+          Export JSON
+        </button>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
         <div className={`${cardShell} flex h-[112px] flex-col justify-center px-8 py-4`}>
           <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-fg-muted/70">
             Total Findings
@@ -150,6 +145,7 @@ export default function Reports() {
             </p>
             <ShieldCheck size={14} className="text-emerald-400/80" />
           </div>
+        </div>
         </div>
       </div>
 
