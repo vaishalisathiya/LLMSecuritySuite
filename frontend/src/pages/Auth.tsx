@@ -40,8 +40,17 @@ export default function AuthPage() {
           : await loginUser({ username: form.username, password: form.password });
       localStorage.setItem('user', JSON.stringify(user));
       navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.detail ?? 'Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      const data = (err as { response?: { data?: unknown } })?.response?.data;
+      let msg = 'Something went wrong. Please try again.';
+      if (typeof data === 'string' && data.trim()) msg = data.trim();
+      else if (data && typeof data === 'object' && 'detail' in data) {
+        const d = (data as { detail: unknown }).detail;
+        if (typeof d === 'string') msg = d;
+        else if (Array.isArray(d))
+          msg = d.map((x: { msg?: string }) => x.msg ?? JSON.stringify(x)).join(' ');
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
