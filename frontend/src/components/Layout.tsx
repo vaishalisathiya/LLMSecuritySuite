@@ -50,18 +50,18 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-surface-void text-fg">
+    <div className="flex h-screen overflow-hidden bg-surface-void text-fg">
       <aside
-        className="relative flex flex-shrink-0 flex-col border-r border-border-subtle bg-surface-base"
+        className="relative flex h-full flex-shrink-0 flex-col overflow-hidden border-r border-border-subtle bg-surface-base"
         style={{ width: sidebarWidth }}
       >
         {/* Brand — dominant, generous vertical rhythm */}
         <div className="border-b border-border-subtle px-7 pb-12 pt-10">
-          <div className="flex items-start gap-4">
+          <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-accent/35 bg-accent-secondary/35 text-accent shadow-[0_0_0_1px_rgba(34,255,233,0.08)]">
               <ShieldAlert size={22} strokeWidth={2} />
             </div>
-            <div className="min-w-0 pt-0.5">
+            <div className="min-w-0">
               <p
                 className="font-heading font-semibold leading-snug tracking-tight text-accent"
                 style={{ fontSize: Math.max(13, 20 * fontScale) }}
@@ -127,7 +127,7 @@ export default function Layout() {
         />
       </aside>
 
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface-void">
+      <main className="flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-surface-void">
         <TopBar />
         <div className="min-h-0 flex-1 overflow-auto bg-surface-void [background-image:radial-gradient(ellipse_90%_60%_at_50%_-30%,rgba(34,255,233,0.07),transparent_55%)]">
           <Outlet />
