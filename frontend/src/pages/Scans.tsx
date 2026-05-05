@@ -195,10 +195,6 @@ export default function Scans() {
 
   return (
     <Page>
-      <PageHeader
-        title="Security Scans"
-        description="Run security scans against registered models and track results over time."
-      />
       {(streaming || streamEvents.length > 0) && (
         <div className={`${shell} mb-6 p-5`}>
           <div className="mb-3 flex items-center gap-2">
@@ -242,45 +238,42 @@ export default function Scans() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className={`w-full max-w-lg ${shell} p-6`}>
-            <div className="mb-5 flex items-center justify-between">
+          <div className={`w-full max-w-2xl ${shell}`} style={{ padding: '2rem' }}>
+            <div className="flex items-start justify-between" style={{ marginBottom: '1.5rem' }}>
               <div>
-                <h2 className="font-heading font-semibold text-fg-strong">Initiate Security Scan</h2>
-                <p className="mt-0.5 text-xs text-fg-muted">Select prompts and a target model</p>
+                <h2 className="font-heading text-xl font-semibold text-fg-strong">Initiate Security Scan</h2>
+                <p className="text-xs text-fg-muted" style={{ marginTop: '0.35rem' }}>Select prompts and a target model</p>
               </div>
               <button type="button" onClick={() => setShowForm(false)} className="rounded-lg p-1.5 text-fg-muted hover:bg-white/[0.06]">
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={submit} className="flex flex-col gap-4">
+            <form onSubmit={submit} className="flex flex-col" style={{ gap: '1.25rem' }}>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-fg-muted">
+                <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>
                   Test Prompts <span className="text-fg-muted/70">({form.prompt_ids.length} selected)</span>
                 </label>
                 <div className="max-h-40 overflow-y-auto rounded-xl border border-white/[0.08] bg-surface-raised">
                   {prompts.map((p) => (
-                    <label key={p.id} className="flex cursor-pointer items-start gap-3 px-3 py-2 hover:bg-white/[0.04]">
+                    <label key={p.id} className="flex cursor-pointer items-start gap-3 hover:bg-white/[0.04]" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
                       <input
                         type="checkbox"
                         checked={form.prompt_ids.includes(p.id)}
                         onChange={() => togglePrompt(p.id)}
                         className="mt-0.5 shrink-0 accent-[#22ffe9]"
                       />
-                      <span className="text-xs text-fg">
-                        {p.input_text.slice(0, 70)}
-                        {p.input_text.length > 70 ? '…' : ''}
-                      </span>
+                      <span className="text-xs text-fg">{p.input_text}</span>
                     </label>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-fg-muted">Target Model</label>
+                <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>Target Model</label>
                 <select
                   required
                   value={form.model_id}
                   onChange={(e) => setForm((f) => ({ ...f, model_id: e.target.value }))}
-                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none focus:border-accent/40"
+                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                 >
                   <option value="">Select a model...</option>
                   {modelsList.map((m) => (
@@ -291,18 +284,18 @@ export default function Scans() {
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                <label className="flex items-center gap-1 text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>
                   <Key size={10} /> API Key
                 </label>
                 <input
                   type="password"
                   value={form.api_key}
                   onChange={(e) => setForm((f) => ({ ...f, api_key: e.target.value }))}
-                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none focus:border-accent/40"
+                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                   placeholder="sk-... (leave blank to use stored credential)"
                 />
               </div>
-              <div className="flex gap-3 pt-1">
+              <div className="flex gap-3" style={{ paddingTop: '0.25rem' }}>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
@@ -324,144 +317,153 @@ export default function Scans() {
         </div>
       )}
 
-      <div className={`overflow-hidden ${shell}`}>
-        <div className="flex flex-col gap-4 border-b border-white/[0.06] bg-surface-raised/30 px-6 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <h2 className="font-heading text-base font-semibold text-fg-strong">Recent Operations</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowForm(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
-            >
-              <Plus size={14} strokeWidth={2.5} />
-              New Scan
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterOpen((o) => !o)}
-              className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
-                filterOpen || filterQuery
-                  ? 'border-accent/40 bg-accent/10 text-accent'
-                  : 'border-white/[0.12] text-fg-muted hover:bg-white/[0.04] hover:text-fg-strong'
-              }`}
-            >
-              <Filter size={14} />
-              Filter
-            </button>
-            <button
-              type="button"
-              onClick={exportCsv}
-              disabled={filteredScans.length === 0}
-              className="flex items-center gap-1.5 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-fg-muted transition-colors hover:bg-white/[0.04] hover:text-fg-strong disabled:opacity-40"
-            >
-              <Download size={14} />
-              Export CSV
-            </button>
+      <div className={`mt-8 min-w-0 overflow-hidden ${shell}`}>
+        <div className="p-6">
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="font-heading text-lg font-semibold leading-snug text-fg-strong" style={{ paddingLeft: '0.5rem' }}>Recent Operations</h2>
+            <div className="flex flex-wrap items-center justify-end gap-3" style={{ paddingRight: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center gap-2 rounded-lg border-2 border-accent/50 bg-accent/15 text-sm font-semibold text-accent shadow-sm transition-colors hover:bg-accent/20" style={{ paddingLeft: '1.25rem', paddingRight: '1.25rem', paddingTop: '0.375rem', paddingBottom: '0.375rem' }}
+              >
+                <Plus size={16} strokeWidth={2.5} />
+                New Scan
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterOpen((o) => !o)}
+                style={{ paddingLeft: '1.25rem', paddingRight: '1.25rem', paddingTop: '0.375rem', paddingBottom: '0.375rem' }}
+                className={`inline-flex items-center gap-2 rounded-lg border text-sm font-medium transition-colors ${
+                  filterOpen || filterQuery
+                    ? 'border-accent/40 bg-accent/10 text-accent'
+                    : 'border-white/[0.14] text-fg-muted hover:bg-white/[0.05] hover:text-fg-strong'
+                }`}
+              >
+                <Filter size={16} />
+                Filter
+              </button>
+              <button
+                type="button"
+                onClick={exportCsv}
+                disabled={filteredScans.length === 0}
+                className="inline-flex items-center gap-2 rounded-lg border border-white/[0.14] text-sm font-medium text-fg-muted transition-colors hover:bg-white/[0.05] hover:text-fg-strong disabled:opacity-40" style={{ paddingLeft: '1.25rem', paddingRight: '1.25rem', paddingTop: '0.375rem', paddingBottom: '0.375rem' }}
+              >
+                <Download size={16} />
+                Export CSV
+              </button>
+            </div>
           </div>
-        </div>
 
-        {filterOpen && (
-          <div className="border-b border-white/[0.06] bg-black/20 px-6 py-3 lg:px-8">
-            <input
-              type="search"
-              value={filterQuery}
-              onChange={(e) => setFilterQuery(e.target.value)}
-              placeholder="Filter by operation ID or target model..."
-              className="w-full max-w-md rounded-lg border border-white/[0.1] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/35"
-            />
-          </div>
-        )}
+          {filterOpen && (
+            <div className="mb-5 rounded-xl border border-white/[0.08] bg-surface-raised/40 px-4 py-3">
+              <input
+                type="search"
+                value={filterQuery}
+                onChange={(e) => setFilterQuery(e.target.value)}
+                placeholder="Filter by operation ID or target model..."
+                className="w-full max-w-md rounded-lg border border-white/[0.1] bg-surface-panel px-3 py-2.5 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/35"
+              />
+            </div>
+          )}
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] bg-black/25">
-                {['', 'Operation ID', 'Target asset', 'Status', 'Risk score', 'Execution time', 'Actions'].map((h, i) => (
-                  <th
-                    key={i}
-                    className="px-6 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-fg-muted lg:px-7"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredScans.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-16 text-center text-fg-muted">
-                    <Zap size={28} className="mx-auto mb-3 text-accent/30" />
-                    <p className="text-sm">
-                      {scans.length === 0
-                        ? 'No scans yet. Use New Scan to begin testing.'
-                        : 'No operations match this filter. Clear the filter or try different keywords.'}
-                    </p>
-                  </td>
+          <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
+            <table className="w-full min-w-[860px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.1] bg-surface-raised/50">
+                  {['', 'Operation ID', 'Target asset', 'Status', 'Risk score', 'Execution time', 'Actions'].map((h, i) => (
+                    <th
+                      key={i}
+                      className="min-h-[48px] px-[18px] text-left align-middle text-sm font-medium uppercase tracking-wide text-fg-muted/90" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ) : (
-                filteredScans.map((s) => {
-                  const m = modelsList.find((x) => x.id === s.model_id);
-                  const scanPrompts = prompts.filter((p) => s.prompt_id_list?.includes(p.id));
-                  const score = riskScoreFromResults(results[s.id]);
-                  const pill = statusPill(s.run_status);
-                  const barColor =
-                    score == null ? 'bg-white/[0.08]' : score >= 70 ? 'bg-red-500/80' : score >= 40 ? 'bg-amber-500/80' : 'bg-emerald-500/70';
+              </thead>
+              <tbody>
+                {filteredScans.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-[18px] py-16 text-center text-fg-muted">
+                      <Zap size={28} className="mx-auto mb-3 text-accent/30" />
+                      <p className="text-sm leading-relaxed">
+                        {scans.length === 0
+                          ? 'No scans yet. Use New Scan to begin testing.'
+                          : 'No operations match this filter. Clear the filter or try different keywords.'}
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredScans.map((s) => {
+                    const m = modelsList.find((x) => x.id === s.model_id);
+                    const scanPrompts = prompts.filter((p) => s.prompt_id_list?.includes(p.id));
+                    const score = riskScoreFromResults(results[s.id]);
+                    const pill = statusPill(s.run_status);
+                    const barColor =
+                      score == null ? 'bg-white/[0.08]' : score >= 70 ? 'bg-red-500/80' : score >= 40 ? 'bg-amber-500/80' : 'bg-emerald-500/70';
 
-                  return (
-                    <Fragment key={s.id}>
-                      <tr className="border-b border-white/[0.05] transition-colors hover:bg-white/[0.02]">
-                        <td className="w-10 px-3 py-3 lg:px-4">
-                          <button
-                            type="button"
-                            onClick={() => expand(s.id)}
-                            className="rounded p-1 text-fg-muted transition-colors hover:bg-white/[0.06] hover:text-fg-strong"
-                            aria-expanded={expanded === s.id}
-                          >
-                            {expanded === s.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                          </button>
-                        </td>
-                        <td className="px-5 py-3 lg:px-7">
-                          <p className="font-mono text-sm font-medium text-accent">SCN-{s.id}</p>
-                          <p className="mt-0.5 text-[11px] text-fg-muted">
-                            {s.created_at ? new Date(s.created_at).toLocaleString() : '—'}
-                          </p>
-                        </td>
-                        <td className="max-w-[220px] px-5 py-3 text-xs text-fg lg:px-7">
-                          <span className="truncate font-medium" title={m?.name}>
-                            {m?.name || `model-${s.model_id}`}
-                          </span>
-                          {m?.provider && <p className="mt-0.5 text-[11px] text-fg-muted">{m.provider}</p>}
-                        </td>
-                        <td className="px-5 py-3 lg:px-7">
-                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide ${pill.className}`}>
-                            {s.run_status === 'completed' && <CheckCircle2 size={11} />}
-                            {s.run_status === 'pending' && <Activity size={11} className="animate-pulse" />}
-                            {pill.label}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3 lg:px-7">
-                          <div className="flex max-w-[140px] items-center gap-2">
-                            <span className="w-10 shrink-0 text-right text-xs tabular-nums text-fg-muted">
-                              {score != null ? `${score}/100` : '—'}
+                    return (
+                      <Fragment key={s.id}>
+                        <tr className="min-h-[64px] border-b border-white/[0.06] transition-colors hover:bg-white/[0.03]">
+                          <td className="w-12 align-middle px-[18px]" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => expand(s.id)}
+                              className="inline-flex rounded-lg p-2 text-fg-muted transition-colors hover:bg-white/[0.08] hover:text-fg-strong"
+                              aria-expanded={expanded === s.id}
+                            >
+                              {expanded === s.id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                            </button>
+                          </td>
+                          <td className="align-middle px-[18px]" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+                            <p className="font-mono text-sm font-medium leading-snug text-accent">SCN-{s.id}</p>
+                            <p className="mt-2 text-sm leading-relaxed text-fg-muted">
+                              {s.created_at ? new Date(s.created_at).toLocaleString() : '—'}
+                            </p>
+                          </td>
+                          <td className="max-w-[240px] align-middle px-[18px] text-sm text-fg" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+                            <span className="block truncate font-medium leading-snug" title={m?.name}>
+                              {m?.name || `model-${s.model_id}`}
                             </span>
-                            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/40 ring-1 ring-white/[0.06]">
-                              <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: score != null ? `${score}%` : '0%' }} />
+                            {m?.provider && (
+                              <p className="mt-2 text-sm leading-relaxed text-fg-muted">{m.provider}</p>
+                            )}
+                          </td>
+                          <td className="align-middle px-[18px]" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold leading-snug tracking-wide ${pill.className}`}
+                            >
+                              {s.run_status === 'completed' && <CheckCircle2 size={14} className="shrink-0" />}
+                              {s.run_status === 'pending' && <Activity size={14} className="shrink-0 animate-pulse" />}
+                              {pill.label}
+                            </span>
+                          </td>
+                          <td className="align-middle px-[18px]" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+                            <div className="flex min-w-[180px] max-w-[260px] flex-wrap items-center gap-3">
+                              <span className="shrink-0 text-right text-sm tabular-nums leading-relaxed text-fg-muted">
+                                {score != null ? `${score}/100` : '—'}
+                              </span>
+                              <div className="h-2 min-w-[96px] flex-1 overflow-hidden rounded-full bg-black/40 ring-1 ring-white/[0.08]">
+                                <div
+                                  className={`h-full rounded-full transition-all ${barColor}`}
+                                  style={{ width: score != null ? `${score}%` : '0%' }}
+                                />
+                              </div>
                             </div>
-                          </div>
-                          {score == null && results[s.id]?.length === 0 && expanded === s.id && (
-                            <p className="mt-1 text-[10px] text-fg-muted">No result rows yet</p>
-                          )}
-                        </td>
-                        <td className="px-5 py-3 text-xs text-fg-muted lg:px-7">
-                          {s.run_status === 'pending' ? 'Running…' : formatRelativeTime(s.created_at)}
-                        </td>
-                        <td className="px-5 py-3 text-fg-muted lg:px-7" />
-                      </tr>
-                      {expanded === s.id && (
-                        <tr className="border-b border-white/[0.06] bg-surface-raised/50">
-                          <td colSpan={7} className="px-7 py-5 lg:px-9">
-                            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-fg-muted">Prompts</p>
-                            <div className="mb-4 flex flex-col gap-1">
+                            {score == null && results[s.id]?.length === 0 && expanded === s.id && (
+                              <p className="mt-2 text-sm leading-relaxed text-fg-muted">No result rows yet</p>
+                            )}
+                          </td>
+                          <td className="align-middle px-[18px] text-sm leading-relaxed text-fg-muted" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+                            {s.run_status === 'pending' ? 'Running…' : formatRelativeTime(s.created_at)}
+                          </td>
+                          <td className="align-middle px-[18px] text-fg-muted" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }} />
+                        </tr>
+                        {expanded === s.id && (
+                          <tr className="border-b-2 border-white/[0.12] bg-surface-raised/50">
+                            <td colSpan={7} className="px-[18px] py-5 lg:px-6">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem' }}>Prompts</p>
+                            <div className="flex flex-col gap-1" style={{ marginBottom: '0.75rem' }}>
                               {scanPrompts.map((p) => (
                                 <p
                                   key={p.id}
@@ -471,17 +473,17 @@ export default function Scans() {
                                 </p>
                               ))}
                             </div>
-                            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-fg-muted">Results</p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem' }}>Results</p>
                             {!results[s.id] || results[s.id].length === 0 ? (
                               <p className="text-xs text-fg-muted">No results recorded yet.</p>
                             ) : (
-                              <div className="flex flex-col gap-2">
+                              <div className="flex flex-col gap-2" style={{ marginBottom: '1rem' }}>
                                 {results[s.id].map((r) => (
                                   <div
                                     key={r.id}
-                                    className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-surface-panel p-3"
+                                    className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-surface-panel p-3"
                                   >
-                                    <div className="mt-0.5 shrink-0">
+                                    <div className="shrink-0">
                                       {r.vulnerability_detected ? (
                                         <ShieldAlert size={16} className="text-red-400" />
                                       ) : (
@@ -496,6 +498,7 @@ export default function Scans() {
                                       className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
                                         r.vulnerability_detected ? 'bg-red-900/50 text-red-300' : 'bg-emerald-900/50 text-emerald-300'
                                       }`}
+                                      style={{ marginRight: '0.5rem' }}
                                     >
                                       {r.vulnerability_detected ? 'Vulnerable' : 'Safe'}
                                     </span>
@@ -503,34 +506,41 @@ export default function Scans() {
                                 ))}
                               </div>
                             )}
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                   );
                 })
               )}
             </tbody>
           </table>
-        </div>
+          </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/[0.06] bg-black/20 px-6 py-3 text-xs text-fg-muted sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <p>
-            Showing{' '}
-            {filteredScans.length === 0 ? '0' : `1–${filteredScans.length}`} of {scans.length} scan operations
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              disabled
-              className="rounded border border-white/[0.08] px-2.5 py-1 text-fg-muted opacity-40"
-            >
-              Previous
-            </button>
-            <span className="rounded border border-accent/30 bg-accent/10 px-2.5 py-1 font-medium text-accent">1</span>
-            <button type="button" disabled className="rounded border border-white/[0.08] px-2.5 py-1 text-fg-muted opacity-40">
-              Next
-            </button>
+          <div className="mt-6 flex flex-col gap-3 border-t border-white/[0.08] pt-5 text-sm leading-relaxed text-fg-muted sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              Showing{' '}
+              {filteredScans.length === 0 ? '0' : `1–${filteredScans.length}`} of {scans.length} scan operations
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled
+                className="rounded-lg border border-white/[0.1] px-3 py-2 text-sm text-fg-muted opacity-40"
+              >
+                Previous
+              </button>
+              <span className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-sm font-medium text-accent">
+                1
+              </span>
+              <button
+                type="button"
+                disabled
+                className="rounded-lg border border-white/[0.1] px-3 py-2 text-sm text-fg-muted opacity-40"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>

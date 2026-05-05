@@ -109,7 +109,7 @@ export default function Layout() {
         </nav>
 
         {/* New Scan — anchored bottom with clear separation from nav */}
-        <div className="mt-auto border-t border-white/[0.04] pb-9 pt-8" style={{ paddingLeft: '20px', paddingRight: '16px' }}>
+        <div className="mt-auto border-t border-white/[0.04] pb-9 pt-8" style={{ paddingLeft: '20px', paddingRight: '16px', marginBottom: '1.5rem' }}>
           <NavLink
             to="/scans?new=1"
             style={{ fontSize: Math.max(11, 16 * fontScale) }}

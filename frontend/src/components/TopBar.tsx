@@ -10,6 +10,13 @@ const TITLES: Record<string, string> = {
   '/models': 'Model Registry',
 };
 
+const DESCRIPTIONS: Record<string, string> = {
+  '/scans': 'Run tests against registered models and track results over time.',
+  '/reports': 'Review scan evaluation findings — filter, triage, and export.',
+  '/prompts': 'Security test prompts organized by attack category and risk level.',
+  '/models': 'LLM models registered for security vulnerability testing.',
+};
+
 const SEARCH_PLACEHOLDER: Record<string, string> = {
   '/': 'Search logs...',
   '/scans': 'Search scans...',
@@ -22,6 +29,7 @@ export default function TopBar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const title = TITLES[pathname] ?? 'LLM Security Suite';
+  const description = DESCRIPTIONS[pathname];
   const searchPlaceholder = SEARCH_PLACEHOLDER[pathname] ?? 'Search...';
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -48,9 +56,12 @@ export default function TopBar() {
   return (
     <header className="flex min-h-[88px] shrink-0 flex-col gap-6 border-b border-white/[0.06] bg-surface-base py-7 lg:min-h-[96px] lg:flex-row lg:items-center lg:gap-10 lg:py-8 xl:gap-12" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
       {/* Page title — fixed width band so search can expand */}
-      <h1 className="shrink-0 font-heading text-2xl font-semibold leading-tight tracking-tight text-fg-strong lg:text-[30px] lg:leading-snug">
-        {title}
-      </h1>
+      <div className="shrink-0">
+        <h1 className="font-heading text-2xl font-semibold leading-tight tracking-tight text-fg-strong lg:text-[30px] lg:leading-snug">
+          {title}
+        </h1>
+        {description && <p className="mt-1 text-sm text-fg-muted">{description}</p>}
+      </div>
 
       {/* Search — grows with available space, visually central */}
       <div className="flex min-w-0 flex-1 justify-center lg:px-2">

@@ -48,21 +48,6 @@ export default function Models() {
 
   return (
     <Page>
-      <PageHeader
-        title="Model Registry"
-        description="LLM models registered for security vulnerability testing."
-        actions={
-          <button
-            type="button"
-            onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
-          >
-            <Plus size={14} strokeWidth={2.5} />
-            Register Model
-          </button>
-        }
-      />
-
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className={`w-full max-w-md ${cardShell} p-6`}>
@@ -204,6 +189,16 @@ export default function Models() {
       )}
 
       {/* Model cards */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setShowForm(true)}
+          className="absolute right-0 inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
+          style={{ bottom: 'calc(100% + 8px)' }}
+        >
+          <Plus size={14} strokeWidth={2.5} />
+          Register Model
+        </button>
       {models.length === 0 ? (
         <div className={`${cardShell} px-6 py-14 text-center`}>
           <Cpu size={28} className="mx-auto mb-3 text-fg-muted/40" />
@@ -260,6 +255,7 @@ export default function Models() {
           })}
         </div>
       )}
+      </div>
     </Page>
   );
 }
