@@ -14,6 +14,10 @@ async def interact(body: LLMPromptRequest):
     try:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, run_browser_test, body)
-        return response
+        return LLMPromptResponse(
+            response=response,
+            provider=body.model.provider,
+            model=body.model.name
+        ) 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
