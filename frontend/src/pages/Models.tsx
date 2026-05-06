@@ -21,7 +21,7 @@ const PROVIDER_COLORS: Record<string, { bg: string; text: string }> = {
 export default function Models() {
   const [models, setModels] = useState<Model[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', provider: '', model_type: 'LLM', access_method: 'API', credential_reference: '', access_url: '', browser_textbox: '' });
+  const [form, setForm] = useState({ name: '', provider: '', model_type: 'LLM', access_method: 'API', model_identifier: '', credential_reference: '', access_url: '', browser_textbox: '' });
   const [loading, setLoading] = useState(false);
 
   const load = () => getModels().then(setModels);
@@ -32,7 +32,7 @@ export default function Models() {
     setLoading(true);
     try {
       await createModel({ ...form, credential_reference: form.credential_reference || null, access_url: form.access_url || null, browser_textbox: form.browser_textbox || null });
-      setForm({ name: '', provider: '', model_type: 'LLM', access_method: 'API', credential_reference: '', access_url: '', browser_textbox: '' });
+      setForm({ name: '', provider: '', model_type: 'LLM', access_method: 'API', model_identifier: '', credential_reference: '', access_url: '', browser_textbox: '' });
       setShowForm(false);
       load();
     } finally { setLoading(false); }
@@ -50,11 +50,11 @@ export default function Models() {
     <Page>
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className={`w-full max-w-md ${cardShell} p-6`}>
-            <div className="mb-5 flex items-center justify-between">
+          <div className={`w-full max-w-2xl ${cardShell}`} style={{ padding: '2rem' }}>
+            <div className="flex items-start justify-between" style={{ marginBottom: '1.5rem' }}>
               <div>
-                <h2 className="font-heading font-semibold text-fg-strong">Register Model</h2>
-                <p className="mt-0.5 text-xs text-fg-muted">Add a new model to the testing registry</p>
+                <h2 className="font-heading text-xl font-semibold text-fg-strong">Register Model</h2>
+                <p className="text-xs text-fg-muted" style={{ marginTop: '0.35rem' }}>Add a new model to the testing registry</p>
               </div>
               <button
                 type="button"
@@ -64,38 +64,38 @@ export default function Models() {
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={submit} className="flex flex-col gap-4">
+            <form onSubmit={submit} className="flex flex-col" style={{ gap: '1.25rem' }}>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-fg-muted">Model Name</label>
+                  <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>Model Name</label>
                   <input
                     type="text"
                     required
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                     placeholder="e.g. gpt-4o"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-fg-muted">Provider</label>
+                  <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>Provider</label>
                   <input
                     type="text"
                     required
                     value={form.provider}
                     onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
-                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                     placeholder="e.g. OpenAI"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-fg-muted">Model Type</label>
+                  <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>Model Type</label>
                   <select
                     value={form.model_type}
                     onChange={(e) => setForm((f) => ({ ...f, model_type: e.target.value }))}
-                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none focus:border-accent/40"
+                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                   >
                     {MODEL_TYPES.map((t) => (
                       <option key={t} value={t}>
@@ -105,11 +105,11 @@ export default function Models() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-fg-muted">Access Method</label>
+                  <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>Access Method</label>
                   <select
                     value={form.access_method}
                     onChange={(e) => setForm((f) => ({ ...f, access_method: e.target.value }))}
-                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none focus:border-accent/40"
+                    className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                   >
                     {ACCESS_METHODS.map((m) => (
                       <option key={m} value={m}>
@@ -120,12 +120,24 @@ export default function Models() {
                 </div>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-fg-muted">Credential Reference</label>
+                <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>Model Identifier</label>
+                <input
+                  type="text"
+                  required
+                  value={form.model_identifier}
+                  onChange={(e) => setForm((f) => ({ ...f, model_identifier: e.target.value }))}
+                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
+                  placeholder="e.g. gpt-4o, claude-3-5-sonnet-latest"
+                />
+                <p className="mt-1 text-xs text-fg-muted">The model ID used in API calls</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>Credential Reference</label>
                 <input
                   type="text"
                   value={form.credential_reference}
                   onChange={(e) => setForm((f) => ({ ...f, credential_reference: e.target.value }))}
-                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                  className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                   placeholder="e.g. openai-api-key (secret name)"
                 />
                 <p className="mt-1 text-xs text-fg-muted">Reference to the credential in secrets manager</p>
@@ -133,29 +145,29 @@ export default function Models() {
               {form.access_method === 'Browser' && (
                 <>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-fg-muted">Access URL</label>
+                    <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>Access URL</label>
                     <input
                       type="text"
                       value={form.access_url}
                       onChange={(e) => setForm((f) => ({ ...f, access_url: e.target.value }))}
-                      className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                      className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                       placeholder="e.g. https://chat.openai.com"
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-fg-muted">Input Field Selector</label>
+                    <label className="block text-xs font-medium text-fg-muted" style={{ marginBottom: '0.5rem' }}>Input Field Selector</label>
                     <input
                       type="text"
                       value={form.browser_textbox}
                       onChange={(e) => setForm((f) => ({ ...f, browser_textbox: e.target.value }))}
-                      className="w-full rounded-xl border border-white/[0.08] bg-surface-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40"
+                      className="w-full rounded-xl border border-white/[0.08] bg-surface-raised text-sm text-fg outline-none placeholder:text-fg-muted focus:border-accent/40" style={{ paddingLeft: '0.75rem', paddingRight: '0.75rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                       placeholder="e.g. #prompt-textarea (CSS selector)"
                     />
                     <p className="mt-1 text-xs text-fg-muted">CSS selector for the chat input box</p>
                   </div>
                 </>
               )}
-              <div className="flex gap-3 pt-1">
+              <div className="flex gap-3" style={{ paddingTop: '0.25rem' }}>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
@@ -177,16 +189,21 @@ export default function Models() {
       )}
 
       {/* Model cards */}
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setShowForm(true)}
-          className="absolute right-0 inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
-          style={{ bottom: 'calc(100% + 8px)' }}
-        >
-          <Plus size={14} strokeWidth={2.5} />
-          Register Model
-        </button>
+      <div>
+        <div className="flex items-center justify-between" style={{ marginBottom: '1.25rem' }}>
+          <p className="text-sm leading-relaxed text-fg-muted">
+            {models.length} model{models.length !== 1 ? 's' : ''} registered
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
+            style={{ paddingLeft: '1rem', paddingRight: '1rem', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginRight: '0.75rem' }}
+          >
+            <Plus size={14} strokeWidth={2.5} />
+            Register Model
+          </button>
+        </div>
       {models.length === 0 ? (
         <div className={`${cardShell} px-6 py-14 text-center`}>
           <Cpu size={28} className="mx-auto mb-3 text-fg-muted/40" />

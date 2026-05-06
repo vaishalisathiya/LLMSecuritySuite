@@ -48,17 +48,7 @@ export default function Prompts() {
 
   return (
     <Page>
-      <div className="relative" style={{ marginBottom: '32px' }}>
-        <button
-          type="button"
-          onClick={() => setShowForm(true)}
-          className="absolute right-0 inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
-          style={{ bottom: 'calc(100% + 8px)' }}
-        >
-          <Plus size={14} strokeWidth={2.5} />
-          Add Prompt
-        </button>
-        <div className="flex min-w-0 flex-col gap-10">
+      <div className="flex min-w-0 flex-col gap-10" style={{ marginBottom: '32px' }}>
         {/* Category overview cards — own section; gap-10 on parent guarantees 40px before table (no margin collapse) */}
         <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {CATEGORIES.map((c) => {
@@ -100,20 +90,31 @@ export default function Prompts() {
         <section className="w-full min-w-0">
         <div className={cardShell}>
           <div className="px-6 pb-5 pt-8">
-            <div className="mb-4 flex items-baseline justify-between gap-4">
+            <div className="mb-4 flex items-center justify-between gap-4">
               <p className="text-sm leading-relaxed text-fg-muted">
                 {catFilter !== 'all' ? `${CAT_CONFIG[catFilter]?.label} — ` : ''}
                 {filtered.length} prompt{filtered.length !== 1 ? 's' : ''}
               </p>
-              {catFilter !== 'all' && (
+              <div className="flex items-center gap-3" style={{ marginRight: '0.75rem' }}>
+                {catFilter !== 'all' && (
+                  <button
+                    type="button"
+                    onClick={() => setCatFilter('all')}
+                    className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-accent hover:text-accent/90"
+                  >
+                    Clear filter
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => setCatFilter('all')}
-                  className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-accent hover:text-accent/90"
+                  onClick={() => setShowForm(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 text-xs font-semibold text-accent transition-colors hover:bg-accent/15"
+                  style={{ paddingLeft: '1rem', paddingRight: '1rem', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                 >
-                  Clear filter
+                  <Plus size={14} strokeWidth={2.5} />
+                  Add Prompt
                 </button>
-              )}
+              </div>
             </div>
 
             <div className="overflow-x-auto rounded-lg border border-white/[0.1]">
@@ -300,7 +301,6 @@ export default function Prompts() {
           </div>
         </div>
       )}
-      </div>
     </Page>
   );
 }
