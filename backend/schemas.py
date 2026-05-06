@@ -50,7 +50,8 @@ class LLMModelCreate(BaseModel):
     provider: str
     model_type: str
     access_method: str
-    access_url: Optional[str] = None #if browser based, where to look to enter data
+    model_identifier: str
+    access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
     login_info: Optional[List[LoginInfo]] = []
@@ -61,7 +62,8 @@ class LLMModelOut(BaseModel):
     provider: str
     model_type: str
     access_method: str
-    access_url: Optional[str] = None #if browser based, where to look to enter data
+    model_identifier: str
+    access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
     login_info: Optional[List[LoginInfo]] = []
