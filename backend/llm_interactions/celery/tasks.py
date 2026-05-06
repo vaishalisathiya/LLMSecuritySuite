@@ -67,6 +67,7 @@ def run_llm_task(request: dict):
                         "confidence": evaluation["confidence"],
                         "acceptance_criteria": evaluation["acceptance_criteria"],
                     },
+                    headers={"X-Tenant-ID": "1"},
                     timeout=30
                 )
             except Exception as e:
@@ -85,6 +86,7 @@ def run_llm_task(request: dict):
                 requests.patch(
                     f"{BACKEND_URL}/scans/{llm_request.scan_id}/status",
                     params={"status": "failed"},
+                    headers={"X-Tenant-ID": "1"},
                     timeout=10
                 )
             except Exception:
