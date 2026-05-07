@@ -154,6 +154,7 @@ class LLMModel(BaseModel):
     provider: str
     model_type: str
     access_method: str
+    model_identifier: Optional[str] = None
     access_url: Optional[str] = None
     browser_textbox: Optional[str] = None
     credential_reference: Optional[str] = None
