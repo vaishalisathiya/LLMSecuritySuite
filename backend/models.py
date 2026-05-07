@@ -36,7 +36,6 @@ class LLMModel(Base):
     model_type = Column(Text, nullable=False)
     interface_type = Column(Text, nullable=True)
     access_method = Column(Text, nullable=False)
-    model_identifier = Column(Text, nullable=True)
     credential_reference = Column(Text, nullable=True)
     access_url = Column(Text, nullable=True)
     browser_textbox = Column(Text, nullable=True)
